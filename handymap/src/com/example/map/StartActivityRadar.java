@@ -78,7 +78,7 @@ public class StartActivityRadar extends Activity implements SensorEventListener 
 					.show();
 
 			Intent myIntent = new Intent(StartActivityRadar.this,
-					MapActivity.class);
+					MapViewActivity.class);
 			StartActivityRadar.this.startActivity(myIntent);
 		}
 	}
