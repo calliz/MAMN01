@@ -19,6 +19,7 @@ public class StartActivity extends Activity {
 		values = new String[] { "Min position", "Sök", "Hotel", "Pub" };
 		adapter = new ArrayAdapter<String>(this, R.layout.row_layout,
 				R.id.list_item, values);
+		listView.setAdapter(adapter);
 	}
 
 	@Override
