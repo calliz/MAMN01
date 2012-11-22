@@ -22,6 +22,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.maps.GeoPoint;
+
 public class StartActivityRadar extends Activity implements SensorEventListener {
 	private ImageView imageView;
 	private SensorManager sensorManager;
@@ -58,6 +60,8 @@ public class StartActivityRadar extends Activity implements SensorEventListener 
 			public void onClick(View v) {
 
 				currentPos = myLocation.getCurrentLocation();
+//				currentPos.setLatitude(55.600459);
+//				currentPos.setLongitude(12.96725);
 				if (currentPos == null) {
 					Toast.makeText(StartActivityRadar.this,
 							"no GPS signal - no position set",
@@ -70,7 +74,7 @@ public class StartActivityRadar extends Activity implements SensorEventListener 
 									+ currentPos.getLongitude(),
 							Toast.LENGTH_SHORT).show();
 				}
-				Log.i(TAG, "set button");
+				Log.i(TAG, "" + myLocation.getCurrentLocation());
 
 			}
 
