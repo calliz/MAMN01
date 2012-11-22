@@ -9,5 +9,6 @@
     <string name="radarview">radarview</string>
     <string name="title_activity_map">MapActivity</string>
     <string name="pigeonview">pigeonview</string>
+    <string name="temp">temp</string>
 
 </resources>
