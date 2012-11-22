@@ -6,7 +6,7 @@ import android.view.Menu;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-public class StartActivity extends Activity {
+public class ListActivityNotCurrentlyUsed extends Activity {
 	private ListView listView;
 	private ArrayAdapter<String> adapter;
 	private String[] values;

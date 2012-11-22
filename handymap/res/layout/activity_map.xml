@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/country_main_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black"
+    android:background="@android:color/white"
     android:orientation="vertical" >
 
     <ImageView
-        android:id="@+id/radar_image"
+        android:id="@+id/pigeon_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:contentDescription="@string/radarview"
-        android:src="@drawable/radar_2_black" />
+        android:contentDescription="@string/pigeonview"
+        android:src="@drawable/pigeon" />
 
 </LinearLayout>

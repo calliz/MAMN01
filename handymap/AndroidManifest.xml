@@ -12,7 +12,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".StartActivity"
+            android:name=".ListActivityNotCurrentlyUsed"
             android:label="@string/title_activity_start" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -32,6 +32,15 @@
         <activity
             android:name=".StartActivityRadar"
             android:label="@string/title_activity_start_activity_radar" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".MapActivity"
+            android:label="@string/title_activity_map" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
