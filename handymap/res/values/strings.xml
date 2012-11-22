@@ -10,5 +10,6 @@
     <string name="title_activity_map">MapActivity</string>
     <string name="pigeonview">pigeonview</string>
     <string name="title_activity_map_view_activity">title_activity_map_view_activity</string>
+    <string name="temp">temp</string>
 
 </resources>
