@@ -41,20 +41,20 @@ public class HelloGuide extends Activity {
 
 			public void onClick(View v) {
 
-				Log.i(TAG, "set button");
 				currentPos = myLocation.getCurrentLocation();
 				if (currentPos == null) {
 					Toast.makeText(HelloGuide.this,
 							"no GPS signal - no position set",
 							Toast.LENGTH_SHORT).show();
-
+					
 				} else {
 					Toast.makeText(
 							HelloGuide.this,
 							"location set= " + currentPos.getLatitude() + ", "
 									+ currentPos.getLongitude(),
-							Toast.LENGTH_SHORT).show();
+									Toast.LENGTH_SHORT).show();
 				}
+				Log.i(TAG, "set button");
 
 			}
 
@@ -66,19 +66,19 @@ public class HelloGuide extends Activity {
 
 			public void onClick(View v) {
 
-				Log.i(TAG, "guide button");
 				if (currentPos != null) {
-
+					
 					WayPoint goal = new WayPoint("goal", currentPos);
-
+					
 					theGuide.setNextDestination(goal);
-
+					
 					theGuide.onStart();
 				} else {
 					Toast.makeText(HelloGuide.this,
 							"no GPS signal - cannot guide", Toast.LENGTH_SHORT)
 							.show();
 				}
+				Log.i(TAG, "guide button");
 			}
 		});
 
