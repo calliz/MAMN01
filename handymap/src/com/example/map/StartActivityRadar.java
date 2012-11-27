@@ -59,7 +59,7 @@ public class StartActivityRadar extends Activity implements SensorEventListener 
 
 			public void onClick(View v) {
 
-				CheckEnableGPS();
+				checkEnableGPS();
 
 				currentPos = myLocation.getCurrentLocation();
 				// currentPos.setLatitude(55.600459);
@@ -187,14 +187,18 @@ public class StartActivityRadar extends Activity implements SensorEventListener 
 		super.onDestroy();
 	}
 
-	private void CheckEnableGPS() {
+	private void checkEnableGPS() {
 		String provider = Settings.Secure.getString(getContentResolver(),
 				Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
-		if (provider.equals(LocationManager.GPS_PROVIDER)) {
+		if (provider.equals(LocationManager.NETWORK_PROVIDER + ","
+				+ LocationManager.GPS_PROVIDER)
+				|| provider.equals(LocationManager.GPS_PROVIDER)) {
 			// GPS Enabled
 			Toast.makeText(StartActivityRadar.this, "GPS Enabled: " + provider,
 					Toast.LENGTH_LONG).show();
 		} else {
+			Toast.makeText(StartActivityRadar.this,
+					"GPS not Enabled: " + provider, Toast.LENGTH_LONG).show();
 			Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
 			startActivity(intent);
 		}
