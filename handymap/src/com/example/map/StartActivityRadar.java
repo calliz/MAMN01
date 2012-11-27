@@ -22,8 +22,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.google.android.maps.GeoPoint;
-
 public class StartActivityRadar extends Activity implements SensorEventListener {
 	private ImageView imageView;
 	private SensorManager sensorManager;
