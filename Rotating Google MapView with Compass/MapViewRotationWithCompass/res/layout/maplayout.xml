@@ -23,7 +23,7 @@
             android:id="@+id/map_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:apiKey="##### YOUR MAP KEY HERE ######"
+            android:apiKey="0HD3D-gP_dK14vQ6ZKP0PJdh6jMI21V-ws-TcbA"
             android:clickable="true" />
     </LinearLayout>
 
