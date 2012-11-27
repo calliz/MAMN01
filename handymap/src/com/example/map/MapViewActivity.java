@@ -33,8 +33,8 @@ public class MapViewActivity extends MapActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_view_activity);
         MapView mapView = (MapView) findViewById(R.id.mapview);
-        mapView.setBuiltInZoomControls(true);
-        
+        mapView.setBuiltInZoomControls(false);
+              
         
         MapController mc = mapView.getController();
         //ArrayList<GeoPoint> all_geo_points = getDirections(55.70462000000001, 13.191360, 55.604640, 13.00382);
@@ -54,13 +54,18 @@ public class MapViewActivity extends MapActivity {
         //mapView.getOverlays().add(new BlackOverlay(null, 1, 1, 700));
         int nbrOfCircles = 3;
         GP currentLocation = all_geo_points.get(0);
-        addLocationMarkers(mapView, all_geo_points);
+        blackBackround(mapView, currentLocation);
         addCircles(mapView, all_geo_points, nbrOfCircles, currentLocation);
-        
+        addLocationMarkers(mapView, all_geo_points);
 //        mc.animateTo(new GeoPoint(latitudeE6, longitudeE6));
 //        mLat = 55.70462000000001;//_lat;
 //        mLon = 13.191360;//_lon;
         
+        
+    }
+    
+    public void blackBackround(MapView mapView, GP currentLocation){
+    	mapView.getOverlays().add(new BlackOverlay(null, currentLocation.getLat(), currentLocation.getLongi(), 4000));
     }
     
     public void addCircles(MapView mapView, ArrayList<GP> all_gp, int nbrOfCircles, GP currentLocation){
@@ -97,22 +102,18 @@ public class MapViewActivity extends MapActivity {
 	private void addLocationMarkers(MapView mapView,
 			ArrayList<GP> all_geo_points) {
 		int radius = 200;
-
+		GP currentLocation = all_geo_points.get(0);
+		mapView.getOverlays().add(new CurrentPositionOverlay(null, currentLocation.getLat(), currentLocation.getLongi(), radius -50));//currentposition
+		
+		
     	for(GP point: all_geo_points){
-    		mapView.getOverlays().add(new LocationOverlay(null, point.getLat(), point.getLongi(), radius));
+    		if(point != currentLocation){
+    			mapView.getOverlays().add(new LocationOverlay(null, point.getLat(), point.getLongi(), radius));
+    		}
     	}
 		
 	}
 
-	private int[] radius(ArrayList<GeoPoint> all_geo_points){
-    	
-    	for(GeoPoint point: all_geo_points){
-    		
-    	}
-    	
-		return null;
-    	
-    }
     
     private void addGeoPoints(ArrayList<GP> all_geo_points) {//55.70462000000001, 13.191360
     	all_geo_points.add(new GP(55.70462000000001,  13.191360));
@@ -226,7 +227,7 @@ public class MapViewActivity extends MapActivity {
 
     }
     
-    private class GP{
+    private class GP{//possible extends GeoPoint
     	double lat;
     	double longi;
     	

@@ -1,6 +1,5 @@
 package com.example.map;
 
-
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
@@ -12,18 +11,18 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 
-public class BlackOverlay extends Overlay {
+public class CurrentPositionOverlay extends Overlay {
 
     Context context;
     double mLat;
     double mLon;
     float mRadius;
 
-     public BlackOverlay(Context _context, double _lat, double _lon, float radius ) {
+     public CurrentPositionOverlay(Context _context, double _lat, double _lon, float radius ) {
             context = _context;
-            mLat = 55.70462000000001;//_lat;
-            mLon = 13.191360;//_lon;
-            mRadius = 15000;
+            mLat = _lat;
+            mLon = _lon;
+            mRadius = radius;
      }
 
      public void draw(Canvas canvas, MapView mapView, boolean shadow) {
@@ -43,7 +42,7 @@ public class BlackOverlay extends Overlay {
 
          innerCirclePaint = new Paint();
          innerCirclePaint.setColor(Color.BLACK);
-         innerCirclePaint.setAlpha(120);
+         innerCirclePaint.setAlpha(200);
          innerCirclePaint.setAntiAlias(true);
 
          innerCirclePaint.setStyle(Paint.Style.FILL);
@@ -51,4 +50,3 @@ public class BlackOverlay extends Overlay {
          canvas.drawCircle((float)pt.x, (float)pt.y, circleRadius, innerCirclePaint);
     }
 }
-

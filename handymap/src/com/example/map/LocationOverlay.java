@@ -42,7 +42,7 @@ public class LocationOverlay extends Overlay {
 
          innerCirclePaint = new Paint();
          innerCirclePaint.setColor(Color.RED);
-         innerCirclePaint.setAlpha(100);
+         innerCirclePaint.setAlpha(175);
          innerCirclePaint.setAntiAlias(true);
 
          innerCirclePaint.setStyle(Paint.Style.FILL);
