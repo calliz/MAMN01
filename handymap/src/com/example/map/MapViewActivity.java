@@ -22,6 +22,7 @@ import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 
 public class MapViewActivity extends MapActivity {
@@ -36,15 +37,112 @@ public class MapViewActivity extends MapActivity {
         
         
         MapController mc = mapView.getController();
-        ArrayList<GeoPoint> all_geo_points = getDirections(55.70462000000001, 13.191360, 55.604640, 13.00382);
-        GeoPoint moveTo = (GeoPoint) all_geo_points.get(0);
-        mc.animateTo(moveTo);
-        mc.setZoom(12);
-        //mapView.getOverlays().add(new RoadOverlay(all_geo_points));
-        mapView.getOverlays().add(new CircleOverlay(null, 1, 1, 2000));
-        mapView.getOverlays().add(new CircleOverlay(null, 1, 1, 3000));
-        mapView.getOverlays().add(new CircleOverlay(null, 1, 1, 4000));
+        //ArrayList<GeoPoint> all_geo_points = getDirections(55.70462000000001, 13.191360, 55.604640, 13.00382);
+        ArrayList<GP> all_geo_points = new ArrayList<GP>();
+        addGeoPoints(all_geo_points);     
         
+        GeoPoint moveTo = new GeoPoint(all_geo_points.get(0).getLatE6() , all_geo_points.get(0).getLongiE6());
+        mc.animateTo(moveTo);//ska ha current location
+        mc.setZoom(14);
+        //mapView.getOverlays().add(new RoadOverlay(all_geo_points));
+        //createRightZoomLevel(mc, all_geo_points);
+        //convertera om till lat1*e6 etc i metoden och byt ut i övrigt....
+        //mapView.getOverlays().add(new BlackOverlay(null, 1, 1, 2000));
+        //mapView.getOverlays().add(new CircleOverlay(null, 1, 1, 500));
+//        mapView.getOverlays().add(new CircleOverlay(null, 1, 1, 3000));
+//        mapView.getOverlays().add(new CircleOverlay(null, 1, 1, 4000));
+        //mapView.getOverlays().add(new BlackOverlay(null, 1, 1, 700));
+        int nbrOfCircles = 3;
+        GP currentLocation = all_geo_points.get(0);
+        addLocationMarkers(mapView, all_geo_points);
+        addCircles(mapView, all_geo_points, nbrOfCircles, currentLocation);
+        
+//        mc.animateTo(new GeoPoint(latitudeE6, longitudeE6));
+//        mLat = 55.70462000000001;//_lat;
+//        mLon = 13.191360;//_lon;
+        
+    }
+    
+    public void addCircles(MapView mapView, ArrayList<GP> all_gp, int nbrOfCircles, GP currentLocation){
+    	
+    	int radius = getRadius(all_gp, currentLocation);
+    	int step = radius / nbrOfCircles;
+    	step *= 90;//85
+    	
+    	for(int i = 1; i <= nbrOfCircles; i++){
+    		mapView.getOverlays().add(new CircleOverlay(null, currentLocation.getLongi(), currentLocation.getLat(), step * i));
+    	}
+    	
+    }
+    
+    private int getRadius(ArrayList<GP> all_gp, GP currentLocation) {
+	
+    	
+    	int longestDistance = 0;
+
+    	for (GP item : all_gp) {
+	    	int lat = (int) item.getLat();
+	    	int lon = (int) item.getLongi();
+	    	
+	    	int thisDistance = (int) Math.sqrt(lat*lat + lon*lon);
+	    	if(thisDistance > longestDistance){
+	    		
+	    		longestDistance = thisDistance;  		
+	    	}	   	
+    	 }
+    	Log.d("getRadius", "Radius = " + longestDistance);
+		return longestDistance;
+	}
+
+	private void addLocationMarkers(MapView mapView,
+			ArrayList<GP> all_geo_points) {
+		int radius = 200;
+
+    	for(GP point: all_geo_points){
+    		mapView.getOverlays().add(new LocationOverlay(null, point.getLat(), point.getLongi(), radius));
+    	}
+		
+	}
+
+	private int[] radius(ArrayList<GeoPoint> all_geo_points){
+    	
+    	for(GeoPoint point: all_geo_points){
+    		
+    	}
+    	
+		return null;
+    	
+    }
+    
+    private void addGeoPoints(ArrayList<GP> all_geo_points) {//55.70462000000001, 13.191360
+    	all_geo_points.add(new GP(55.70462000000001,  13.191360));
+		all_geo_points.add(new GP(55.721056,  13.21277));
+		all_geo_points.add(new GP(55.709114,  13.167778));
+		all_geo_points.add(new GP(55.724313, 13.204009));
+		all_geo_points.add(new GP(55.698377, 13.216635));
+	}
+
+	public void createRightZoomLevel(MapController mc, ArrayList<GP> all_geo_points){
+    	
+    	int minLatitude = Integer.MAX_VALUE;
+    	int maxLatitude = Integer.MIN_VALUE;
+    	int minLongitude = Integer.MAX_VALUE;
+    	int maxLongitude = Integer.MIN_VALUE;
+
+    	// Find the boundaries of the item set
+    	for (GP item : all_geo_points) { //item Contain list of Geopints
+	    	int lat = item.getLatE6();
+	    	int lon = item.getLongiE6();
+	
+	    	maxLatitude = Math.max(lat, maxLatitude);
+	    	minLatitude = Math.min(lat, minLatitude);
+	    	maxLongitude = Math.max(lon, maxLongitude);
+	    	minLongitude = Math.min(lon, minLongitude);
+    	 }
+    	 mc.zoomToSpan(Math.abs(maxLatitude - minLatitude), Math.abs(maxLongitude - minLongitude));
+    
+    	 //mc.animateTo(new GeoPoint((maxLatitude + minLatitude)/2, (maxLongitude + minLongitude)/2 )); 
+
     }
     
     @Override
@@ -126,6 +224,32 @@ public class MapViewActivity extends MapActivity {
 
         return list_of_geopoints;
 
+    }
+    
+    private class GP{
+    	double lat;
+    	double longi;
+    	
+    	public GP(double lat, double longi){
+    		this.lat = lat;
+    		this.longi = longi;
+    	}
+    	
+    	public int getLongiE6(){
+    		return (int) (longi * 1e6);
+    	}
+    	
+    	public int getLatE6(){
+    		return (int) (lat * 1e6);
+    	}
+    	
+    	public double getLongi(){
+    		return longi;
+    	}
+    	
+    	public double getLat(){
+    		return lat;
+    	}
     }
 
 }

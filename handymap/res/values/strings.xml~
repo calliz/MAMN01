@@ -9,9 +9,10 @@
     <string name="radarview">radarview</string>
     <string name="title_activity_map">MapActivity</string>
     <string name="pigeonview">pigeonview</string>
+<<<<<<< HEAD
     <string name="title_activity_map_view_activity">title_activity_map_view_activity</string>
+=======
     <string name="temp">temp</string>
-    <string name="title_activity_sensor_tilt">title_activity_sensor_tilt</string>
-    <string name="title_activity_rotating_map">title_activity_rotating_map</string>
+>>>>>>> c7de7004f19de469774d8418b9fa9e75c4763fbc
 
 </resources>
