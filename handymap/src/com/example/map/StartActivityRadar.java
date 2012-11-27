@@ -12,7 +12,9 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -57,9 +59,11 @@ public class StartActivityRadar extends Activity implements SensorEventListener 
 
 			public void onClick(View v) {
 
+				CheckEnableGPS();
+
 				currentPos = myLocation.getCurrentLocation();
-//				currentPos.setLatitude(55.600459);
-//				currentPos.setLongitude(12.96725);
+				// currentPos.setLatitude(55.600459);
+				// currentPos.setLongitude(12.96725);
 				if (currentPos == null) {
 					Toast.makeText(StartActivityRadar.this,
 							"no GPS signal - no position set",
@@ -181,5 +185,19 @@ public class StartActivityRadar extends Activity implements SensorEventListener 
 		theGuide.onDestroy();
 
 		super.onDestroy();
+	}
+
+	private void CheckEnableGPS() {
+		String provider = Settings.Secure.getString(getContentResolver(),
+				Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+		if (provider.equals(LocationManager.GPS_PROVIDER)) {
+			// GPS Enabled
+			Toast.makeText(StartActivityRadar.this, "GPS Enabled: " + provider,
+					Toast.LENGTH_LONG).show();
+		} else {
+			Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+			startActivity(intent);
+		}
+
 	}
 }
