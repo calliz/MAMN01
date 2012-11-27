@@ -40,7 +40,11 @@ public class MapViewActivity extends MapActivity {
         GeoPoint moveTo = (GeoPoint) all_geo_points.get(0);
         mc.animateTo(moveTo);
         mc.setZoom(12);
-        mapView.getOverlays().add(new RoadOverlay(all_geo_points));
+        //mapView.getOverlays().add(new RoadOverlay(all_geo_points));
+        mapView.getOverlays().add(new CircleOverlay(null, 1, 1, 2000));
+        mapView.getOverlays().add(new CircleOverlay(null, 1, 1, 3000));
+        mapView.getOverlays().add(new CircleOverlay(null, 1, 1, 4000));
+        
     }
     
     @Override
