@@ -5,7 +5,7 @@ import org.haptimap.hcimodules.guiding.HapticGuideEventListener;
 import org.haptimap.hcimodules.util.MyLocationModule;
 import org.haptimap.hcimodules.util.WayPoint;
 
-import android.app.Activity;
+import android.app.Service;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -14,6 +14,7 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -24,24 +25,24 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-public class StartActivityRadar extends Activity implements SensorEventListener {
+public class StartActivityRadar extends Service implements SensorEventListener {
+
+	private static final String TAG = StartActivityRadar.class.getSimpleName();
+
 	private ImageView imageView;
 	private SensorManager sensorManager;
 	private long lastUpdate;
 	private Button button1;
 	private Button button2;
-	private final String TAG = "MyActivity";
 	private MyLocationModule myLocation;
 	private Location currentPos;
 	private HapticGuide theGuide;
 
-	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-				WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		super.onCreate();
+		Log.i(TAG, "Service creating");
 
-		super.onCreate(savedInstanceState);
+		checkEnableGPS();
 
 		myLocation = new MyLocationModule(this);
 
@@ -51,58 +52,9 @@ public class StartActivityRadar extends Activity implements SensorEventListener 
 
 		theGuide = new HapticGuide(this);
 
-		setContentView(R.layout.main);
+		fetchCurrentPosition();
 
-		button1 = (Button) findViewById(R.id.set);
-
-		button1.setOnClickListener(new OnClickListener() {
-
-			public void onClick(View v) {
-
-				checkEnableGPS();
-
-				currentPos = myLocation.getCurrentLocation();
-				// currentPos.setLatitude(55.600459);
-				// currentPos.setLongitude(12.96725);
-				if (currentPos == null) {
-					Toast.makeText(StartActivityRadar.this,
-							"no GPS signal - no position set",
-							Toast.LENGTH_SHORT).show();
-
-				} else {
-					Toast.makeText(
-							StartActivityRadar.this,
-							"location set= " + currentPos.getLatitude() + ", "
-									+ currentPos.getLongitude(),
-							Toast.LENGTH_SHORT).show();
-				}
-				Log.i(TAG, "" + myLocation.getCurrentLocation());
-
-			}
-
-		});
-
-		button2 = (Button) findViewById(R.id.guide);
-
-		button2.setOnClickListener(new OnClickListener() {
-
-			public void onClick(View v) {
-
-				if (currentPos != null) {
-
-					WayPoint goal = new WayPoint("goal", currentPos);
-
-					theGuide.setNextDestination(goal);
-
-					theGuide.onStart();
-				} else {
-					Toast.makeText(StartActivityRadar.this,
-							"no GPS signal - cannot guide", Toast.LENGTH_SHORT)
-							.show();
-				}
-				Log.i(TAG, "guide button");
-			}
-		});
+		guideToSavedPosition();
 
 		theGuide.registerHapticGuideEventListener(new HapticGuideEventListener() {
 
@@ -115,31 +67,55 @@ public class StartActivityRadar extends Activity implements SensorEventListener 
 			}
 
 			public void onDestinationReached(long[] pattern) {
-				Toast.makeText(StartActivityRadar.this, "You have arrived!",
-						Toast.LENGTH_SHORT).show();
+//				Toast.makeText(StartActivityRadar.this, "You have arrived!",
+//						Toast.LENGTH_SHORT).show();
+				Log.i(TAG, "onDestinationReached!");
 			}
 		});
 
-		imageView = (ImageView) findViewById(R.id.radar_image);
-		imageView.setImageResource(R.drawable.radar_2_black);
-
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-		lastUpdate = System.currentTimeMillis();
-	}
 
-	protected void onPause() {
-		// unregister listener
-		super.onPause();
-		sensorManager.unregisterListener(this);
-	}
-
-	protected void onResume() {
-		super.onResume();
 		// register this class as a listener for the orientation and
 		// accelerometer sensors
 		sensorManager.registerListener(this,
 				sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
 				SensorManager.SENSOR_DELAY_NORMAL);
+
+		lastUpdate = System.currentTimeMillis();
+	}
+
+	private void guideToSavedPosition() {
+		if (currentPos != null) {
+
+			WayPoint goal = new WayPoint("goal", currentPos);
+
+			theGuide.setNextDestination(goal);
+
+			theGuide.onStart();
+		} else {
+			Toast.makeText(StartActivityRadar.this,
+					"no GPS signal - cannot guide", Toast.LENGTH_SHORT).show();
+		}
+		Log.i(TAG, "guide button");
+	}
+
+	private void fetchCurrentPosition() {
+		currentPos = myLocation.getCurrentLocation();
+		// currentPos.setLatitude(55.600459);
+		// currentPos.setLongitude(12.96725);
+		if (currentPos == null) {
+			Toast.makeText(StartActivityRadar.this,
+					"no GPS signal - no position set", Toast.LENGTH_SHORT)
+					.show();
+
+		} else {
+			Toast.makeText(
+					StartActivityRadar.this,
+					"location set= " + currentPos.getLatitude() + ", "
+							+ currentPos.getLongitude(), Toast.LENGTH_SHORT)
+					.show();
+		}
+		Log.i(TAG, "" + myLocation.getCurrentLocation());
 	}
 
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -147,6 +123,7 @@ public class StartActivityRadar extends Activity implements SensorEventListener 
 	}
 
 	public void onSensorChanged(SensorEvent event) {
+		Log.i(TAG, "onSensorChanged");
 		if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 			getAccelerometer(event);
 		}
@@ -169,21 +146,22 @@ public class StartActivityRadar extends Activity implements SensorEventListener 
 				return;
 			}
 			lastUpdate = actualTime;
-			Toast.makeText(this, "Device was shuffed", Toast.LENGTH_SHORT)
+			Toast.makeText(this, "A new position has been chosen", Toast.LENGTH_SHORT)
 					.show();
 
-			Intent myIntent = new Intent(StartActivityRadar.this,
-					MapViewActivity.class);
-			StartActivityRadar.this.startActivity(myIntent);
+			// UPDATE POSITION ON RADARMAP AND START GUIDING WITH A DETAILED MAPVIEW
+			
+//			Intent myIntent = new Intent(StartActivityRadar.this,
+//					MapViewActivity.class);
+//			StartActivityRadar.this.startActivity(myIntent);
 		}
 	}
 
 	@Override
-	protected void onDestroy() {
-
+	public void onDestroy() {
+		//AVREGISTRERA SENSORLYSSNARE???
 		myLocation.onDestroy();
 		theGuide.onDestroy();
-
 		super.onDestroy();
 	}
 
@@ -203,5 +181,11 @@ public class StartActivityRadar extends Activity implements SensorEventListener 
 			startActivity(intent);
 		}
 
+	}
+
+	@Override
+	public IBinder onBind(Intent arg0) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
