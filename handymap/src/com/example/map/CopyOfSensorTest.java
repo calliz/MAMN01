@@ -8,21 +8,14 @@ import android.hardware.SensorManager;
 import android.hardware.SensorListener;
 
 @SuppressWarnings("deprecation")
-public class SensorTest extends Activity implements SensorListener {
+public class CopyOfSensorTest extends Activity implements SensorListener {
         
-        final String tag = "SensorData";
+        final String tag = "IBMEyes";
         SensorManager sm = null;
-        volatile boolean shouldVibrate;
-        int interval;
-        float y;
       
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-    	//
-    	shouldVibrate = false;
-    	interval = 30;
-    	//
         super.onCreate(savedInstanceState);
         sm = (SensorManager) getSystemService(SENSOR_SERVICE);
         setContentView(R.layout.main);
@@ -33,22 +26,10 @@ public class SensorTest extends Activity implements SensorListener {
     {
         synchronized (this) 
         {
-            try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-            this.y = values[1];
-        	if(this.y <= interval && this.y >= -interval){
-            	shouldVibrate = true;
-            	Log.d(tag, "true y = " + y);
-            }else{
-            	shouldVibrate = false;
-            	Log.d(tag, "false y = " + y);
+            Log.d(tag, "onSensorChanged: " + sensor + ", x: " + values[0] + ", y: " + values[1] + ", z: " + values[2]);
+            if (sensor == SensorManager.SENSOR_ORIENTATION){
+     
             }
-        	
-            //Log.d(tag, "onSensorChanged: " + sensor + ", x: " + values[0] + ", y: " + values[1] + ", z: " + values[2]);
-            
          }
       
     }
@@ -58,6 +39,7 @@ public class SensorTest extends Activity implements SensorListener {
         Log.d(tag,"onAccuracyChanged: " + sensor + ", accuracy: " + accuracy);
         
     }
+ 
 
     @Override
     protected void onResume() 

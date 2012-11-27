@@ -11,17 +11,17 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 
-public class CircleOverlay extends Overlay {
+public class LocationOverlay extends Overlay {
 
     Context context;
     double mLat;
     double mLon;
     float mRadius;
 
-     public CircleOverlay(Context _context, double _lat, double _lon, float radius ) {//lat/long är current location
+     public LocationOverlay(Context _context, double _lat, double _lon, float radius ) {
             context = _context;
-            mLat = 55.70462000000001;//_lat;
-            mLon = 13.191360;//_lon;
+            mLat = _lat;
+            mLon = _lon;
             mRadius = radius;
      }
 
@@ -41,8 +41,8 @@ public class CircleOverlay extends Overlay {
          Paint innerCirclePaint;
 
          innerCirclePaint = new Paint();
-         innerCirclePaint.setColor(Color.BLUE);
-         innerCirclePaint.setAlpha(25);
+         innerCirclePaint.setColor(Color.RED);
+         innerCirclePaint.setAlpha(100);
          innerCirclePaint.setAntiAlias(true);
 
          innerCirclePaint.setStyle(Paint.Style.FILL);
