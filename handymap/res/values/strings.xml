@@ -13,5 +13,6 @@
     <string name="temp">temp</string>
     <string name="title_activity_sensor_tilt">title_activity_sensor_tilt</string>
     <string name="title_activity_rotating_map">title_activity_rotating_map</string>
+    <string name="title_activity_road_map_activity">title_activity_road_map_activity</string>
 
 </resources>

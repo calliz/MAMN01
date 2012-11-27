@@ -25,86 +25,61 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 
-public class MapViewActivity extends MapActivity {
-
+public class RoadMapActivity extends MapActivity {
+	private RoadOverlay roadOverlay;
+	private MapView mapView;
+	private ArrayList<GeoPoint> all_geo_points;
+	private GeoPoint currentTarget;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_view_activity);
-        MapView mapView = (MapView) findViewById(R.id.mapview);
-        mapView.setBuiltInZoomControls(false);              
+        mapView = (MapView) findViewById(R.id.mapview);
+        mapView.setBuiltInZoomControls(true);
+              
         
         MapController mc = mapView.getController();
-        //ArrayList<GeoPoint> all_geo_points = getDirections(55.70462000000001, 13.191360, 55.604640, 13.00382);
-        ArrayList<GP> all_geo_points = new ArrayList<GP>();
-        addGeoPoints(all_geo_points);     
+        //Start and goal GeoPoints here
         
-        GeoPoint moveTo = new GeoPoint(all_geo_points.get(0).getLatE6() , all_geo_points.get(0).getLongiE6());
+        all_geo_points = getDirections(55.70462000000001, 13.191360, 55.709114,  13.167778);
+        //ArrayList<GP> all_geo_points = new ArrayList<GP>();
+        //addGeoPoints(all_geo_points);     
+        
+        GeoPoint moveTo = all_geo_points.get(0);
         mc.animateTo(moveTo);//ska ha current location
         mc.setZoom(14);
-        //mapView.getOverlays().add(new RoadOverlay(all_geo_points));//For the next view
+         roadOverlay = new RoadOverlay(all_geo_points);
+        mapView.getOverlays().add(roadOverlay);//For the next view
         //createRightZoomLevel(mc, all_geo_points);
-        int nbrOfCircles = 3;
-        GP currentLocation = all_geo_points.get(0);
-        blackBackround(mapView, currentLocation);
-        addCircles(mapView, all_geo_points, nbrOfCircles, currentLocation);
-        addLocationMarkers(mapView, all_geo_points);
 //        mc.animateTo(new GeoPoint(latitudeE6, longitudeE6));
-
         
+        all_geo_points.remove(0);//remove the first node
+        currentTarget = all_geo_points.get(0);
         
     }
     
-    public void blackBackround(MapView mapView, GP currentLocation){
-    	mapView.getOverlays().add(new BlackOverlay(null, currentLocation.getLat(), currentLocation.getLongi(), 4000));
-    }
-    
-    public void addCircles(MapView mapView, ArrayList<GP> all_gp, int nbrOfCircles, GP currentLocation){
+    public boolean pointReached(){//returns true if finaldestination reached.
     	
-    	int radius = getRadius(all_gp, currentLocation);
-    	int step = radius / nbrOfCircles;
-    	step *= 90;//85
+    	if(all_geo_points.size() == 1)
+    		return true;
     	
-    	for(int i = 1; i <= nbrOfCircles; i++){
-    		mapView.getOverlays().add(new CircleOverlay(null, currentLocation.getLongi(), currentLocation.getLat(), step * i));
-    	}
+    	all_geo_points.remove(0);
+    	currentTarget = all_geo_points.get(0);  	
+    	
+    	
+    	
+		return false;
     	
     }
     
-    private int getRadius(ArrayList<GP> all_gp, GP currentLocation) {
-	
-    	
-    	int longestDistance = 0;
+    public void setNewRoad(RoadOverlay newOverlay){
+    	mapView.getOverlays().remove(roadOverlay);
+    	mapView.getOverlays().add(newOverlay);
+    }
+    
 
-    	for (GP item : all_gp) {
-	    	int lat = (int) item.getLat();
-	    	int lon = (int) item.getLongi();
-	    	
-	    	int thisDistance = (int) Math.sqrt(lat*lat + lon*lon);
-	    	if(thisDistance > longestDistance){
-	    		
-	    		longestDistance = thisDistance;  		
-	    	}	   	
-    	 }
-    	Log.d("getRadius", "Radius = " + longestDistance);
-		return longestDistance;
-	}
 
-	private void addLocationMarkers(MapView mapView,
-			ArrayList<GP> all_geo_points) {
-		int radius = 200;
-		GP currentLocation = all_geo_points.get(0);
-		mapView.getOverlays().add(new CurrentPositionOverlay(null, currentLocation.getLat(), currentLocation.getLongi(), radius -50));//currentposition
-		
-		
-    	for(GP point: all_geo_points){
-    		if(point != currentLocation){
-    			mapView.getOverlays().add(new LocationOverlay(null, point.getLat(), point.getLongi(), radius));
-    		}
-    	}
-		
-	}
 
     
     private void addGeoPoints(ArrayList<GP> all_geo_points) {//55.70462000000001, 13.191360
