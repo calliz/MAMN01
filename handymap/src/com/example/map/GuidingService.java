@@ -44,44 +44,49 @@ public class GuidingService extends Service implements SensorEventListener {
 		}
 	};
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Service#onCreate()
+	 */
 	public void onCreate() {
 		super.onCreate();
 		Log.i(TAG, "Service creating");
 
-		timer = new Timer("TweetCollectorTimer");
-		timer.schedule(updateTask, 1000L, 1000L);
+		// timer = new Timer("TweetCollectorTimer");
+		// timer.schedule(updateTask, 1000L, 1000L);
 
-		/*
-		 * checkEnableGPS();
-		 * 
-		 * myLocation = new MyLocationModule(this);
-		 * 
-		 * myLocation.onStart();
-		 * 
-		 * currentPos = null;
-		 * 
-		 * theGuide = new HapticGuide(this);
-		 * 
-		 * fetchCurrentPosition();
-		 * 
-		 * guideToSavedPosition();
-		 * 
-		 * theGuide.registerHapticGuideEventListener(new
-		 * HapticGuideEventListener() {
-		 * 
-		 * public void onRateIntervalChanged(int millis) {
-		 * 
-		 * }
-		 * 
-		 * public void onPrepared(boolean onPrepared) {
-		 * 
-		 * }
-		 * 
-		 * public void onDestinationReached(long[] pattern) { //
-		 * Toast.makeText(StartActivityRadar.this, "You have arrived!", //
-		 * Toast.LENGTH_SHORT).show(); Log.i(TAG, "onDestinationReached!"); }
-		 * });
-		 */
+		checkEnableGPS();
+
+		myLocation = new MyLocationModule(this);
+
+		myLocation.onStart();
+
+		currentPos = null;
+
+		theGuide = new HapticGuide(this);
+
+		fetchCurrentPosition();
+
+		guideToSavedPosition();
+
+		theGuide.registerHapticGuideEventListener(new HapticGuideEventListener() {
+
+			public void onRateIntervalChanged(int millis) {
+
+			}
+
+			public void onPrepared(boolean onPrepared) {
+
+			}
+
+			public void onDestinationReached(long[] pattern) { //
+				Toast.makeText(StartActivityRadar.this, "You have arrived!", //
+						Toast.LENGTH_SHORT).show();
+				Log.i(TAG, "onDestinationReached!");
+			}
+		});
+
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
 		// register this class as a listener for the orientation and
@@ -105,7 +110,7 @@ public class GuidingService extends Service implements SensorEventListener {
 			Toast.makeText(GuidingService.this, "no GPS signal - cannot guide",
 					Toast.LENGTH_SHORT).show();
 		}
-//		Log.i(TAG, "guide button");
+		// Log.i(TAG, "guide button");
 	}
 
 	private void fetchCurrentPosition() {
@@ -132,7 +137,7 @@ public class GuidingService extends Service implements SensorEventListener {
 	}
 
 	public void onSensorChanged(SensorEvent event) {
-//		Log.i(TAG, "onSensorChanged");
+		// Log.i(TAG, "onSensorChanged");
 		if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 			getAccelerometer(event);
 		}
