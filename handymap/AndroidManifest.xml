@@ -27,15 +27,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".StartActivityRadar"
-            android:label="@string/title_activity_start_activity_radar" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
+        <service
+            android:name=".GuidingService"
+            android:process=":remote" >
+            <intent-filter>
+                <action android:name="com.example.map.GuidingService" />
             </intent-filter>
-        </activity>
+        </service>
+
         <activity
             android:name=".MapViewActivity"
             android:label="@string/title_activity_map_view_activity"

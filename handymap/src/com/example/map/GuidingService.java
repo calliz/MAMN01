@@ -1,7 +1,9 @@
 package com.example.map;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import org.haptimap.hcimodules.guiding.HapticGuide;
-import org.haptimap.hcimodules.guiding.HapticGuideEventListener;
 import org.haptimap.hcimodules.util.MyLocationModule;
 import org.haptimap.hcimodules.util.WayPoint;
 
@@ -13,21 +15,16 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-public class StartActivityRadar extends Service implements SensorEventListener {
+public class GuidingService extends Service implements SensorEventListener {
 
-	private static final String TAG = StartActivityRadar.class.getSimpleName();
+	private static final String TAG = GuidingService.class.getSimpleName();
 
 	private ImageView imageView;
 	private SensorManager sensorManager;
@@ -38,41 +35,53 @@ public class StartActivityRadar extends Service implements SensorEventListener {
 	private Location currentPos;
 	private HapticGuide theGuide;
 
-	public void onCreate(Bundle savedInstanceState) {
+	private Timer timer;
+
+	private TimerTask updateTask = new TimerTask() {
+		@Override
+		public void run() {
+			Log.i(TAG, "Timer task doing work");
+		}
+	};
+
+	public void onCreate() {
 		super.onCreate();
 		Log.i(TAG, "Service creating");
 
-		checkEnableGPS();
+		timer = new Timer("TweetCollectorTimer");
+		timer.schedule(updateTask, 1000L, 1000L);
 
-		myLocation = new MyLocationModule(this);
-
-		myLocation.onStart();
-
-		currentPos = null;
-
-		theGuide = new HapticGuide(this);
-
-		fetchCurrentPosition();
-
-		guideToSavedPosition();
-
-		theGuide.registerHapticGuideEventListener(new HapticGuideEventListener() {
-
-			public void onRateIntervalChanged(int millis) {
-
-			}
-
-			public void onPrepared(boolean onPrepared) {
-
-			}
-
-			public void onDestinationReached(long[] pattern) {
-//				Toast.makeText(StartActivityRadar.this, "You have arrived!",
-//						Toast.LENGTH_SHORT).show();
-				Log.i(TAG, "onDestinationReached!");
-			}
-		});
-
+		/*
+		 * checkEnableGPS();
+		 * 
+		 * myLocation = new MyLocationModule(this);
+		 * 
+		 * myLocation.onStart();
+		 * 
+		 * currentPos = null;
+		 * 
+		 * theGuide = new HapticGuide(this);
+		 * 
+		 * fetchCurrentPosition();
+		 * 
+		 * guideToSavedPosition();
+		 * 
+		 * theGuide.registerHapticGuideEventListener(new
+		 * HapticGuideEventListener() {
+		 * 
+		 * public void onRateIntervalChanged(int millis) {
+		 * 
+		 * }
+		 * 
+		 * public void onPrepared(boolean onPrepared) {
+		 * 
+		 * }
+		 * 
+		 * public void onDestinationReached(long[] pattern) { //
+		 * Toast.makeText(StartActivityRadar.this, "You have arrived!", //
+		 * Toast.LENGTH_SHORT).show(); Log.i(TAG, "onDestinationReached!"); }
+		 * });
+		 */
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
 		// register this class as a listener for the orientation and
@@ -93,10 +102,10 @@ public class StartActivityRadar extends Service implements SensorEventListener {
 
 			theGuide.onStart();
 		} else {
-			Toast.makeText(StartActivityRadar.this,
-					"no GPS signal - cannot guide", Toast.LENGTH_SHORT).show();
+			Toast.makeText(GuidingService.this, "no GPS signal - cannot guide",
+					Toast.LENGTH_SHORT).show();
 		}
-		Log.i(TAG, "guide button");
+//		Log.i(TAG, "guide button");
 	}
 
 	private void fetchCurrentPosition() {
@@ -104,13 +113,13 @@ public class StartActivityRadar extends Service implements SensorEventListener {
 		// currentPos.setLatitude(55.600459);
 		// currentPos.setLongitude(12.96725);
 		if (currentPos == null) {
-			Toast.makeText(StartActivityRadar.this,
+			Toast.makeText(GuidingService.this,
 					"no GPS signal - no position set", Toast.LENGTH_SHORT)
 					.show();
 
 		} else {
 			Toast.makeText(
-					StartActivityRadar.this,
+					GuidingService.this,
 					"location set= " + currentPos.getLatitude() + ", "
 							+ currentPos.getLongitude(), Toast.LENGTH_SHORT)
 					.show();
@@ -123,7 +132,7 @@ public class StartActivityRadar extends Service implements SensorEventListener {
 	}
 
 	public void onSensorChanged(SensorEvent event) {
-		Log.i(TAG, "onSensorChanged");
+//		Log.i(TAG, "onSensorChanged");
 		if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 			getAccelerometer(event);
 		}
@@ -146,23 +155,28 @@ public class StartActivityRadar extends Service implements SensorEventListener {
 				return;
 			}
 			lastUpdate = actualTime;
-			Toast.makeText(this, "A new position has been chosen", Toast.LENGTH_SHORT)
-					.show();
+			Toast.makeText(this, "A new position has been chosen",
+					Toast.LENGTH_SHORT).show();
 
-			// UPDATE POSITION ON RADARMAP AND START GUIDING WITH A DETAILED MAPVIEW
-			
-//			Intent myIntent = new Intent(StartActivityRadar.this,
-//					MapViewActivity.class);
-//			StartActivityRadar.this.startActivity(myIntent);
+			// UPDATE POSITION ON RADARMAP AND START GUIDING WITH A DETAILED
+			// MAPVIEW
+
+			// Intent myIntent = new Intent(StartActivityRadar.this,
+			// MapViewActivity.class);
+			// StartActivityRadar.this.startActivity(myIntent);
 		}
 	}
 
 	@Override
 	public void onDestroy() {
-		//AVREGISTRERA SENSORLYSSNARE???
+		super.onDestroy();
+		Log.i(TAG, "Service destroying");
+		// AVREGISTRERA SENSORLYSSNARE???
 		myLocation.onDestroy();
 		theGuide.onDestroy();
-		super.onDestroy();
+
+		timer.cancel();
+		timer = null;
 	}
 
 	private void checkEnableGPS() {
@@ -172,11 +186,11 @@ public class StartActivityRadar extends Service implements SensorEventListener {
 				+ LocationManager.GPS_PROVIDER)
 				|| provider.equals(LocationManager.GPS_PROVIDER)) {
 			// GPS Enabled
-			Toast.makeText(StartActivityRadar.this, "GPS Enabled: " + provider,
+			Toast.makeText(GuidingService.this, "GPS Enabled: " + provider,
 					Toast.LENGTH_LONG).show();
 		} else {
-			Toast.makeText(StartActivityRadar.this,
-					"GPS not Enabled: " + provider, Toast.LENGTH_LONG).show();
+			Toast.makeText(GuidingService.this, "GPS not Enabled: " + provider,
+					Toast.LENGTH_LONG).show();
 			Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
 			startActivity(intent);
 		}

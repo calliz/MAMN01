@@ -16,14 +16,15 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
-
-import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
 
 public class MapViewActivity extends MapActivity {
 
@@ -32,6 +33,10 @@ public class MapViewActivity extends MapActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_view_activity);
+        
+        /* This is the important part */
+        startService(new Intent(GuidingService.class.getName()));
+        
         MapView mapView = (MapView) findViewById(R.id.mapview);
         mapView.setBuiltInZoomControls(false);
               
