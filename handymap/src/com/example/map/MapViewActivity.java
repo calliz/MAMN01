@@ -36,7 +36,7 @@ public class MapViewActivity extends MapActivity {
 	@SuppressWarnings("unused")
 	private final String TAG = RoadMapActivity.class.getSimpleName();
 	private MapView mapView;
-	private MapController mMapControl;
+	private MapController mc;
 	private MyLocationOverlay mMyLocationOverlay = null;
 	private boolean mModeCompass = false;
 	private SensorManager mSensorManager;
@@ -224,10 +224,10 @@ public class MapViewActivity extends MapActivity {
 			mMyLocationOverlay.runOnFirstFix(new Runnable() { public void run() {
 				userPoint=mMyLocationOverlay.getMyLocation();
 				if(userPoint!=null)
-					mMapControl.animateTo(userPoint);
+					mc.animateTo(userPoint);
 
 		        }});
-		else mMapControl.animateTo(userPoint);
+		else mc.animateTo(userPoint);
 	}
 
 	@Override
