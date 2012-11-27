@@ -61,7 +61,7 @@ public class MapViewActivity extends MapActivity {
         
         mapView.setBuiltInZoomControls(false);              
         
-        MapController mc = mapView.getController();
+        mc = mapView.getController();
         //ArrayList<GeoPoint> all_geo_points = getDirections(55.70462000000001, 13.191360, 55.604640, 13.00382);
         ArrayList<GP> all_geo_points = new ArrayList<GP>();
         addGeoPoints(all_geo_points);     
