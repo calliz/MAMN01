@@ -1,7 +1,7 @@
 package com.example.map;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.haptimap.hcimodules.guiding.HapticGuide;
 import org.haptimap.hcimodules.guiding.HapticGuideEventListener;
@@ -17,21 +17,17 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.provider.Settings;
 import android.util.Log;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 public class GuidingService extends Service implements SensorEventListener {
 
 	private static final String TAG = GuidingService.class.getSimpleName();
 
-	private ImageView imageView;
 	private SensorManager sensorManager;
 	private long lastUpdate;
-	private Button button1;
-	private Button button2;
 	private MyLocationModule myLocation;
 	private Location currentPos;
 	private HapticGuide theGuide;
@@ -44,6 +40,28 @@ public class GuidingService extends Service implements SensorEventListener {
 	// Log.i(TAG, "Timer task doing work");
 	// }
 	// };
+
+	private List<GuidingServiceListener> listeners = new ArrayList<GuidingServiceListener>();
+
+	private GuidingServiceApi.Stub apiEndpoint = new GuidingServiceApi.Stub() {
+
+		public void addListener(GuidingServiceListener listener)
+				throws RemoteException {
+
+			synchronized (listeners) {
+				listeners.add(listener);
+			}
+		}
+
+		public void removeListener(GuidingServiceListener listener)
+				throws RemoteException {
+
+			synchronized (listeners) {
+				listeners.remove(listener);
+			}
+		}
+
+	};
 
 	public void onCreate() {
 		super.onCreate();
