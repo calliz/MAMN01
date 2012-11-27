@@ -4,6 +4,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.haptimap.hcimodules.guiding.HapticGuide;
+import org.haptimap.hcimodules.guiding.HapticGuideEventListener;
 import org.haptimap.hcimodules.util.MyLocationModule;
 import org.haptimap.hcimodules.util.WayPoint;
 
@@ -35,20 +36,15 @@ public class GuidingService extends Service implements SensorEventListener {
 	private Location currentPos;
 	private HapticGuide theGuide;
 
-	private Timer timer;
+	// private Timer timer;
+	//
+	// private TimerTask updateTask = new TimerTask() {
+	// @Override
+	// public void run() {
+	// Log.i(TAG, "Timer task doing work");
+	// }
+	// };
 
-	private TimerTask updateTask = new TimerTask() {
-		@Override
-		public void run() {
-			Log.i(TAG, "Timer task doing work");
-		}
-	};
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Service#onCreate()
-	 */
 	public void onCreate() {
 		super.onCreate();
 		Log.i(TAG, "Service creating");
@@ -66,7 +62,7 @@ public class GuidingService extends Service implements SensorEventListener {
 
 		theGuide = new HapticGuide(this);
 
-		fetchCurrentPosition();
+		fetchAndSetCurrentPosition();
 
 		guideToSavedPosition();
 
@@ -81,7 +77,7 @@ public class GuidingService extends Service implements SensorEventListener {
 			}
 
 			public void onDestinationReached(long[] pattern) { //
-				Toast.makeText(StartActivityRadar.this, "You have arrived!", //
+				Toast.makeText(GuidingService.this, "You have arrived!", //
 						Toast.LENGTH_SHORT).show();
 				Log.i(TAG, "onDestinationReached!");
 			}
@@ -113,7 +109,7 @@ public class GuidingService extends Service implements SensorEventListener {
 		// Log.i(TAG, "guide button");
 	}
 
-	private void fetchCurrentPosition() {
+	private void fetchAndSetCurrentPosition() {
 		currentPos = myLocation.getCurrentLocation();
 		// currentPos.setLatitude(55.600459);
 		// currentPos.setLongitude(12.96725);
@@ -180,8 +176,8 @@ public class GuidingService extends Service implements SensorEventListener {
 		myLocation.onDestroy();
 		theGuide.onDestroy();
 
-		timer.cancel();
-		timer = null;
+		// timer.cancel();
+		// timer = null;
 	}
 
 	private void checkEnableGPS() {
