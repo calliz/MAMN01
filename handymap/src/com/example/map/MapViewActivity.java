@@ -34,22 +34,14 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import com.example.rotate.RotateView;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
-import android.hardware.SensorManager;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
-import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.ToggleButton;
 
 public class MapViewActivity extends MapActivity {
-	
+
 	private static final String SAVED_STATE_COMPASS_MODE = "com.touchboarder.example.modecompass";
 	@SuppressWarnings("unused")
 	private final String TAG = RoadMapActivity.class.getSimpleName();
@@ -329,13 +321,15 @@ public class MapViewActivity extends MapActivity {
 
 	}
 
-	private void addGeoPoints(ArrayList<GP> all_geo_points) {//55.70462000000001, 13.191360
-    	all_geo_points.add(new GP(55.70462000000001,  13.191360));
-		all_geo_points.add(new GP(55.721056,  13.21277));
-		all_geo_points.add(new GP(55.709114,  13.167778));
+	private void addGeoPoints(ArrayList<GP> all_geo_points) {// 55.70462000000001,
+																// 13.191360
+		all_geo_points.add(new GP(55.70462000000001, 13.191360));
+		all_geo_points.add(new GP(55.721056, 13.21277));
+		all_geo_points.add(new GP(55.709114, 13.167778));
 		all_geo_points.add(new GP(55.724313, 13.204009));
 		all_geo_points.add(new GP(55.698377, 13.216635));
-		all_geo_points.add(new GP(55.707095,13.189404));//Close to epicentrum of Lund
+		all_geo_points.add(new GP(55.707095, 13.189404));// Close to epicentrum
+															// of Lund
 	}
 
 	public void createRightZoomLevel(MapController mc,
@@ -411,52 +405,6 @@ public class MapViewActivity extends MapActivity {
 	@Override
 	public void onResume() {
 		super.onResume();
-
-		toogleRotateView(!mModeCompass);
-		ToggleButton toggleCompassButton = (ToggleButton) findViewById(R.id.button_compass);
-		toggleCompassButton.setChecked(mModeCompass);
-		
-		//shows the my location dot centered on your last known location
-		mMyLocationOverlay.enableMyLocation();
-		
-		if(userPoint==null)
-			mMyLocationOverlay.runOnFirstFix(new Runnable() { public void run() {
-				userPoint=mMyLocationOverlay.getMyLocation();
-				//if(userPoint!=null)
-					//mc.animateTo(userPoint);
-
-		        }});
-//		else mc.animateTo(userPoint);*/
-	}
-
-	@Override
-	public void onPause() {
-		super.onPause();
-		mMyLocationOverlay.disableCompass();
-	}
-	
-	// Called during the activity life cycle, 
-	// when instance state should be saved/restored
-	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		// Save instance-specific state
-		super.onSaveInstanceState(outState);
-		//remember the compass mode state
-		outState.putBoolean(SAVED_STATE_COMPASS_MODE, mModeCompass);
-	}
-
-	@SuppressWarnings("deprecation")
-	@Override
-	protected void onStop() {
-		mSensorManager.unregisterListener(mRotateView);	
-		mMyLocationOverlay.disableMyLocation();
-		super.onStop();
-	}
-
-    
-    public static ArrayList<GeoPoint> getDirections(double lat1, double lon1, double lat2, double lon2) {
-    	
-        String url = "http://maps.googleapis.com/maps/api/directions/xml?origin=" +lat1 + "," + lon1  + "&destination=" + lat2 + "," + lon2 + "&sensor=false&units=metric&mode=walking";
 
 		toogleRotateView(!mModeCompass);
 		ToggleButton toggleCompassButton = (ToggleButton) findViewById(R.id.button_compass);
