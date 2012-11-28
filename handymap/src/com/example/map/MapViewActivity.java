@@ -20,6 +20,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -28,15 +29,33 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.Menu;
-import android.widget.TextView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.example.rotate.RotateView;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
+import com.google.android.maps.MyLocationOverlay;
 
 public class MapViewActivity extends MapActivity {
+
+	private static final String SAVED_STATE_COMPASS_MODE = "com.touchboarder.example.modecompass";
+	@SuppressWarnings("unused")
+	private final String TAG = RoadMapActivity.class.getSimpleName();
+	private MapView mapView;
+	private MapController mc;
+	private boolean mModeCompass = false;
+
+	private MyLocationOverlay mMyLocationOverlay = null;
+	private SensorManager mSensorManager;
+	private LinearLayout mRotateViewContainer;
+	private RotateView mRotateView;
+	private GeoPoint userPoint;
+
+	// new
+
 	/** Messenger for communicating with the service. */
 	Messenger mService = null;
 
@@ -103,8 +122,8 @@ public class MapViewActivity extends MapActivity {
 				mService.send(msg);
 
 				// Give it some value as an example.
-				msg = Message.obtain(null, GuidingService.MSG_GET_CURRENT_POSITION,
-						0, 0);
+				msg = Message.obtain(null,
+						GuidingService.MSG_GET_CURRENT_POSITION, 0, 0);
 
 				// msg = Message.obtain(null, GuidingService.MSG_SET_VALUE,
 				// (int) (55.698377 * 1E6), (int) (13.216635 * 1E6), 0);
@@ -208,16 +227,21 @@ public class MapViewActivity extends MapActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map_view_activity);
+		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+		mRotateViewContainer = (LinearLayout) findViewById(R.id.rotating_view);
+		mRotateView = new RotateView(this);
+		// end new
 
 		/* Added by CALLE */
 		Toast.makeText(getApplicationContext(), "Not attached",
 				Toast.LENGTH_SHORT).show();
 
-		MapView mapView = (MapView) findViewById(R.id.mapview);
+		mapView = (MapView) findViewById(R.id.mapview);
+		mMyLocationOverlay = new MyLocationOverlay(this, mapView);
 
 		mapView.setBuiltInZoomControls(false);
 
-		MapController mc = mapView.getController();
+		mc = mapView.getController();
 		// ArrayList<GeoPoint> all_geo_points = getDirections(55.70462000000001,
 		// 13.191360, 55.604640, 13.00382);
 		ArrayList<GP> all_geo_points = new ArrayList<GP>();
@@ -230,23 +254,20 @@ public class MapViewActivity extends MapActivity {
 				all_geo_points.get(0).getLongiE6());
 		mc.animateTo(moveTo);// ska ha current location
 		mc.setZoom(14);
-		// mapView.getOverlays().add(new RoadOverlay(all_geo_points));
+		// mapView.getOverlays().add(new RoadOverlay(all_geo_points));//For the
+		// next view
 		// createRightZoomLevel(mc, all_geo_points);
-		// convertera om till lat1*e6 etc i metoden och byt ut i övrigt....
-		// mapView.getOverlays().add(new BlackOverlay(null, 1, 1, 2000));
-		// mapView.getOverlays().add(new CircleOverlay(null, 1, 1, 500));
-		// mapView.getOverlays().add(new CircleOverlay(null, 1, 1, 3000));
-		// mapView.getOverlays().add(new CircleOverlay(null, 1, 1, 4000));
-		// mapView.getOverlays().add(new BlackOverlay(null, 1, 1, 700));
 		int nbrOfCircles = 3;
 		GP currentLocation = all_geo_points.get(0);
 		blackBackround(mapView, currentLocation);
 		addCircles(mapView, all_geo_points, nbrOfCircles, currentLocation);
 		addLocationMarkers(mapView, all_geo_points);
 		// mc.animateTo(new GeoPoint(latitudeE6, longitudeE6));
-		// mLat = 55.70462000000001;//_lat;
-		// mLon = 13.191360;//_lon;
 
+		if (savedInstanceState != null) {
+			mModeCompass = savedInstanceState.getBoolean(
+					SAVED_STATE_COMPASS_MODE, false);
+		}
 	}
 
 	public void blackBackround(MapView mapView, GP currentLocation) {
