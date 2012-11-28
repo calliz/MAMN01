@@ -20,5 +20,6 @@
     <string name="title_activity_road_map_activity">title_activity_road_map_activity</string>
     <string name="compass_off">compass_off</string>
     <string name="compass_on">compass_on</string>
+    <string name="guidingservice_stopped">GuidingService stopped</string>
 
 </resources>

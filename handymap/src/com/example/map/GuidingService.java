@@ -12,10 +12,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Handler;
@@ -27,11 +23,10 @@ import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
-public class GuidingService extends Service implements SensorEventListener {
+public class GuidingService extends Service {
 
 	private static final String TAG = GuidingService.class.getSimpleName();
-	private SensorManager sensorManager;
-	private long lastUpdate;
+
 	private MyLocationModule myLocation;
 	private Location currentPos;
 	private Location nextPos;
@@ -63,13 +58,18 @@ public class GuidingService extends Service implements SensorEventListener {
 	 * supply a new value, and will be sent by the service to any registered
 	 * clients with the new value.
 	 */
-	static final int MSG_SET_NEXT_POSITION = 3;
+	static final int MSG_SET_NEXT_LATITUDE = 3;
 
 	/**
 	 * Command to service to get a new value. Will be sent by the service to any
 	 * registered clients with the new value.
 	 */
 	static final int MSG_GET_CURRENT_POSITION = 4;
+
+	/**
+	 * Command to service to guide to next position.
+	 */
+	static final int MSG_GUIDE_CLIENT = 5;
 
 	/**
 	 * Handler of incoming messages from clients.
@@ -80,17 +80,25 @@ public class GuidingService extends Service implements SensorEventListener {
 			switch (msg.what) {
 			case MSG_REGISTER_CLIENT:
 				mClients.add(msg.replyTo);
+				// Toast.makeText(GuidingService.this, "MSG_REGISTER_CLIENT", //
+				// Toast.LENGTH_SHORT).show();
+				Log.i(TAG, "MSG_REGISTER_CLIENT");
 				break;
 			case MSG_UNREGISTER_CLIENT:
 				mClients.remove(msg.replyTo);
+				Log.i(TAG, "MSG_UNREGISTER_CLIENT");
 				break;
-			case MSG_SET_NEXT_POSITION:
+			case MSG_SET_NEXT_LATITUDE:
+				Toast.makeText(GuidingService.this,
+						"Received next position from client", //
+						Toast.LENGTH_SHORT).show();
 				mValue = msg.arg1;
+				Log.i(TAG, "MSG_SET_NEXT_POSITION");
 				nextPos = toLocationFormat(msg.arg1);
 				for (int i = mClients.size() - 1; i >= 0; i--) {
 					try {
 						mClients.get(i).send(
-								Message.obtain(null, MSG_SET_NEXT_POSITION,
+								Message.obtain(null, MSG_SET_NEXT_LATITUDE,
 										mValue, 0));
 					} catch (RemoteException e) {
 						// The client is dead. Remove it from the list;
@@ -114,6 +122,9 @@ public class GuidingService extends Service implements SensorEventListener {
 						mClients.remove(i);
 					}
 				}
+				break;
+			case MSG_GUIDE_CLIENT:
+				guideToSavedPosition();
 				break;
 			default:
 				super.handleMessage(msg);
@@ -166,16 +177,6 @@ public class GuidingService extends Service implements SensorEventListener {
 				Log.i(TAG, "You have arrived at your final destination!!!");
 			}
 		});
-
-		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-
-		// register this class as a listener for the orientation and
-		// accelerometer sensors
-		sensorManager.registerListener(this,
-				sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-				SensorManager.SENSOR_DELAY_NORMAL);
-
-		lastUpdate = System.currentTimeMillis();
 	}
 
 	private void guideToSavedPosition() {
@@ -217,48 +218,6 @@ public class GuidingService extends Service implements SensorEventListener {
 		// Log.i(TAG, "" + myLocation.getCurrentLocation());
 	}
 
-	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-	}
-
-	public void onSensorChanged(SensorEvent event) {
-		// Log.i(TAG, "onSensorChanged");
-		if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-			getAccelerometer(event);
-		}
-
-	}
-
-	private void getAccelerometer(SensorEvent event) {
-		float[] values = event.values;
-		// Movement
-		float x = values[0];
-		float y = values[1];
-		float z = values[2];
-
-		float accelationSquareRoot = (x * x + y * y + z * z)
-				/ (SensorManager.GRAVITY_EARTH * SensorManager.GRAVITY_EARTH);
-		long actualTime = System.currentTimeMillis();
-		if (accelationSquareRoot >= 2) //
-		{
-			if (actualTime - lastUpdate < 200) {
-				return;
-			}
-			lastUpdate = actualTime;
-			// Toast.makeText(this, "A new position has been chosen",
-			// Toast.LENGTH_SHORT).show();
-			//
-			// Log.i(TAG, "" + myLocation.getCurrentLocation());
-
-			// UPDATE POSITION ON RADARMAP AND START GUIDING WITH A DETAILED
-			// MAPVIEW - probably NOT!
-
-			// Intent myIntent = new Intent(StartActivityRadar.this,
-			// MapViewActivity.class);
-			// StartActivityRadar.this.startActivity(myIntent);
-		}
-	}
-
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
@@ -266,7 +225,7 @@ public class GuidingService extends Service implements SensorEventListener {
 		mNM.cancel(R.string.remote_service_started);
 
 		// Tell the user we stopped.
-		Toast.makeText(this, TAG + " : " + R.string.remote_service_stopped,
+		Toast.makeText(this, TAG + " : " + R.string.guidingservice_stopped,
 				Toast.LENGTH_SHORT).show();
 
 		// AVREGISTRERA SENSORLYSSNARE???

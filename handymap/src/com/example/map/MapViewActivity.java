@@ -20,6 +20,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -40,7 +43,7 @@ import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 
-public class MapViewActivity extends MapActivity {
+public class MapViewActivity extends MapActivity implements SensorEventListener {
 
 	private static final String SAVED_STATE_COMPASS_MODE = "com.touchboarder.example.modecompass";
 	@SuppressWarnings("unused")
@@ -48,12 +51,14 @@ public class MapViewActivity extends MapActivity {
 	private MapView mapView;
 	private MapController mc;
 	private boolean mModeCompass = false;
-
 	private MyLocationOverlay mMyLocationOverlay = null;
-	private SensorManager mSensorManager;
+	private SensorManager compassSensorManager;
 	private LinearLayout mRotateViewContainer;
 	private RotateView mRotateView;
 	private GeoPoint userPoint;
+
+	private SensorManager confirmSensorManager;
+	private long lastUpdate;
 
 	// new
 
@@ -63,9 +68,6 @@ public class MapViewActivity extends MapActivity {
 	/** Flag indicating whether we have called bind on the service. */
 	boolean mBound;
 
-	/** Some text view we are using to show state information. */
-	// TextView mCallbackText;
-
 	/**
 	 * Handler of incoming messages from service.
 	 */
@@ -73,14 +75,12 @@ public class MapViewActivity extends MapActivity {
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
-			case GuidingService.MSG_SET_NEXT_POSITION:
-				// mCallbackText.setText("Received from service: " + msg.arg1);
+			case GuidingService.MSG_SET_NEXT_LATITUDE:
 				Toast.makeText(getApplicationContext(),
 						"Received from service: " + msg.arg1,
 						Toast.LENGTH_SHORT).show();
 				break;
 			case GuidingService.MSG_GET_CURRENT_POSITION:
-				// mCallbackText.setText("Received from service: " + msg.arg1);
 				Toast.makeText(getApplicationContext(),
 						"Received from service: " + msg.arg1,
 						Toast.LENGTH_SHORT).show();
@@ -110,9 +110,8 @@ public class MapViewActivity extends MapActivity {
 			// service through an IDL interface, so get a client-side
 			// representation of that from the raw service object.
 			mService = new Messenger(service);
-			// mCallbackText.setText("Attached.");
-			Toast.makeText(getApplicationContext(), "Attached",
-					Toast.LENGTH_SHORT).show();
+//			Toast.makeText(getApplicationContext(), "Attached",
+//					Toast.LENGTH_SHORT).show();
 
 			// We want to monitor the service for as long as we are
 			// connected to it.
@@ -138,9 +137,9 @@ public class MapViewActivity extends MapActivity {
 			}
 
 			// As part of the sample, tell the user what happened.
-			Toast.makeText(getApplicationContext(), "Remote service connected",
-					Toast.LENGTH_SHORT).show();
-			Log.i("MapViewActivity", "Remote service connected");
+//			Toast.makeText(getApplicationContext(), "Remote service connected",
+//					Toast.LENGTH_SHORT).show();
+//			Log.i("MapViewActivity", "Remote service connected");
 
 			// MapView mapView = (MapView) findViewById(R.id.mapview);
 			//
@@ -151,7 +150,6 @@ public class MapViewActivity extends MapActivity {
 			// This is called when the connection with the service has been
 			// unexpectedly disconnected -- that is, its process crashed.
 			mService = null;
-			// mCallbackText.setText("Disconnected.");
 
 			// As part of the sample, tell the user what happened.
 			Toast.makeText(getApplicationContext(),
@@ -167,9 +165,8 @@ public class MapViewActivity extends MapActivity {
 		bindService(new Intent(getApplicationContext(), GuidingService.class),
 				mConnection, Context.BIND_AUTO_CREATE);
 		mBound = true;
-		// mCallbackText.setText("Binding.");
-		Toast.makeText(getApplicationContext(), "Binding", Toast.LENGTH_SHORT)
-				.show();
+//		Toast.makeText(getApplicationContext(), "Binding", Toast.LENGTH_SHORT)
+//				.show();
 	}
 
 	void doUnbindService() {
@@ -191,9 +188,8 @@ public class MapViewActivity extends MapActivity {
 			// Detach our existing connection.
 			unbindService(mConnection);
 			mBound = false;
-			// mCallbackText.setText("Unbinding.");
-			Toast.makeText(getApplicationContext(), "Unbinding",
-					Toast.LENGTH_SHORT).show();
+//			Toast.makeText(getApplicationContext(), "Unbinding",
+//					Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -221,14 +217,14 @@ public class MapViewActivity extends MapActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map_view_activity);
-		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+		compassSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		mRotateViewContainer = (LinearLayout) findViewById(R.id.rotating_view);
 		mRotateView = new RotateView(this);
 		// end new
 
 		/* Added by CALLE */
-		Toast.makeText(getApplicationContext(), "Not attached",
-				Toast.LENGTH_SHORT).show();
+//		Toast.makeText(getApplicationContext(), "Not attached",
+//				Toast.LENGTH_SHORT).show();
 
 		mapView = (MapView) findViewById(R.id.mapview);
 		mMyLocationOverlay = new MyLocationOverlay(this, mapView);
@@ -262,6 +258,16 @@ public class MapViewActivity extends MapActivity {
 			mModeCompass = savedInstanceState.getBoolean(
 					SAVED_STATE_COMPASS_MODE, false);
 		}
+
+		confirmSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+		// register this class as a listener for the orientation and
+		// accelerometer sensors
+		confirmSensorManager.registerListener(this, confirmSensorManager
+				.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+				SensorManager.SENSOR_DELAY_NORMAL);
+
+		lastUpdate = System.currentTimeMillis();
 	}
 
 	public void blackBackround(MapView mapView, GP currentLocation) {
@@ -382,7 +388,7 @@ public class MapViewActivity extends MapActivity {
 	@SuppressWarnings("deprecation")
 	private void toogleRotateView(boolean compassMode) {
 		if (compassMode) {
-			mSensorManager.unregisterListener(mRotateView);
+			compassSensorManager.unregisterListener(mRotateView);
 			mRotateView.removeAllViews();
 			mRotateViewContainer.removeAllViews();
 			mRotateViewContainer.addView(mapView);
@@ -394,7 +400,7 @@ public class MapViewActivity extends MapActivity {
 			mRotateView.addView(mapView);
 			mRotateViewContainer.addView(mRotateView);
 			mapView.setClickable(true);
-			mSensorManager.registerListener(mRotateView,
+			compassSensorManager.registerListener(mRotateView,
 					SensorManager.SENSOR_ORIENTATION,
 					SensorManager.SENSOR_DELAY_UI);
 			mMyLocationOverlay.enableCompass();
@@ -444,7 +450,7 @@ public class MapViewActivity extends MapActivity {
 	@SuppressWarnings("deprecation")
 	@Override
 	protected void onStop() {
-		mSensorManager.unregisterListener(mRotateView);
+		compassSensorManager.unregisterListener(mRotateView);
 		mMyLocationOverlay.disableMyLocation();
 		doUnbindService();
 		super.onStop();
@@ -554,6 +560,48 @@ public class MapViewActivity extends MapActivity {
 
 		public double getLat() {
 			return lat;
+		}
+	}
+
+	public void onAccuracyChanged(Sensor arg0, int arg1) {
+
+	}
+
+	public void onSensorChanged(SensorEvent event) {
+		// Log.i(TAG, "onSensorChanged");
+		if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+			getAccelerometer(event);
+		}
+
+	}
+
+	private void getAccelerometer(SensorEvent event) {
+		float[] values = event.values;
+		// Movement
+		float x = values[0];
+		float y = values[1];
+		float z = values[2];
+
+		float accelationSquareRoot = (x * x + y * y + z * z)
+				/ (SensorManager.GRAVITY_EARTH * SensorManager.GRAVITY_EARTH);
+		long actualTime = System.currentTimeMillis();
+		if (accelationSquareRoot >= 2) //
+		{
+			if (actualTime - lastUpdate < 200) {
+				return;
+			}
+			lastUpdate = actualTime;
+			Toast.makeText(this, "A new position has been chosen",
+					Toast.LENGTH_SHORT).show();
+
+			// Log.i(TAG, "" + myLocation.getCurrentLocation());
+
+			// UPDATE POSITION ON RADARMAP AND START GUIDING WITH A DETAILED
+			// MAPVIEW - probably NOT!
+
+			// Intent myIntent = new Intent(MapViewActivity.this,
+			// RoadMapActivity.class);
+			// MapViewActivity.this.startActivity(myIntent);
 		}
 	}
 
