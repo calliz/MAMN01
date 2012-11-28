@@ -15,7 +15,7 @@
  */
 
 
-package com.touchboarder.example.maprotation;
+package com.example.map;
 
 import javax.microedition.khronos.opengles.GL;
 

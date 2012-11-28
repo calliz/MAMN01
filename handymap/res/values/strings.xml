@@ -17,5 +17,8 @@
     <string name="remote_service_started">Remote service started</string>
     <string name="remote_service_stopped">Remote service stopped</string>
     <string name="guidingservice">GuidingService</string>
+    <string name="title_activity_road_map_activity">title_activity_road_map_activity</string>
+    <string name="compass_off">compass_off</string>
+    <string name="compass_on">compass_on</string>
 
 </resources>

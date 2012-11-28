@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/map_layout_container"
     android:layout_width="match_parent"
@@ -17,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:apiKey="0Sdd0nIeGX--lpXOl4om4jrIaLwe569LGjAIP8Q"
-            android:clickable="false" />
+            android:clickable="true" />
     </LinearLayout>
 
     <ToggleButton
@@ -32,3 +30,5 @@
         android:textOn="@string/compass_on" />
 
 </RelativeLayout>
+
+
