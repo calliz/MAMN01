@@ -16,7 +16,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import android.R;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -29,7 +28,6 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.Menu;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,7 +44,7 @@ public class MapViewActivity extends MapActivity {
 	boolean mBound;
 
 	/** Some text view we are using to show state information. */
-	TextView mCallbackText;
+	// TextView mCallbackText;
 
 	/**
 	 * Handler of incoming messages from service.
@@ -55,8 +53,17 @@ public class MapViewActivity extends MapActivity {
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
-			case GuidingService.MSG_SET_VALUE:
-				mCallbackText.setText("Received from service: " + msg.arg1);
+			case GuidingService.MSG_SET_NEXT_POSITION:
+				// mCallbackText.setText("Received from service: " + msg.arg1);
+				Toast.makeText(getApplicationContext(),
+						"Received from service: " + msg.arg1,
+						Toast.LENGTH_SHORT).show();
+				break;
+			case GuidingService.MSG_GET_CURRENT_POSITION:
+				// mCallbackText.setText("Received from service: " + msg.arg1);
+				Toast.makeText(getApplicationContext(),
+						"Received from service: " + msg.arg1,
+						Toast.LENGTH_SHORT).show();
 				break;
 			default:
 				super.handleMessage(msg);
@@ -83,7 +90,9 @@ public class MapViewActivity extends MapActivity {
 			// service through an IDL interface, so get a client-side
 			// representation of that from the raw service object.
 			mService = new Messenger(service);
-			mCallbackText.setText("Attached.");
+			// mCallbackText.setText("Attached.");
+			Toast.makeText(getApplicationContext(), "Attached",
+					Toast.LENGTH_SHORT).show();
 
 			// We want to monitor the service for as long as we are
 			// connected to it.
@@ -94,8 +103,8 @@ public class MapViewActivity extends MapActivity {
 				mService.send(msg);
 
 				// Give it some value as an example.
-				msg = Message.obtain(null, GuidingService.MSG_SET_VALUE,
-						this.hashCode(), 0);
+				msg = Message.obtain(null, GuidingService.MSG_GET_CURRENT_POSITION,
+						0, 0);
 
 				// msg = Message.obtain(null, GuidingService.MSG_SET_VALUE,
 				// (int) (55.698377 * 1E6), (int) (13.216635 * 1E6), 0);
@@ -113,16 +122,16 @@ public class MapViewActivity extends MapActivity {
 					Toast.LENGTH_SHORT).show();
 			Log.i("MapViewActivity", "Remote service connected");
 
-			MapView mapView = (MapView) findViewById(R.id.mapview);
-
-			sendChosenPositionToService(mapView);
+			// MapView mapView = (MapView) findViewById(R.id.mapview);
+			//
+			// sendChosenPositionToService(mapView);
 		}
 
 		public void onServiceDisconnected(ComponentName className) {
 			// This is called when the connection with the service has been
 			// unexpectedly disconnected -- that is, its process crashed.
 			mService = null;
-			mCallbackText.setText("Disconnected.");
+			// mCallbackText.setText("Disconnected.");
 
 			// As part of the sample, tell the user what happened.
 			Toast.makeText(getApplicationContext(),
@@ -138,7 +147,9 @@ public class MapViewActivity extends MapActivity {
 		bindService(new Intent(getApplicationContext(), GuidingService.class),
 				mConnection, Context.BIND_AUTO_CREATE);
 		mBound = true;
-		mCallbackText.setText("Binding.");
+		// mCallbackText.setText("Binding.");
+		Toast.makeText(getApplicationContext(), "Binding", Toast.LENGTH_SHORT)
+				.show();
 	}
 
 	void doUnbindService() {
@@ -160,7 +171,9 @@ public class MapViewActivity extends MapActivity {
 			// Detach our existing connection.
 			unbindService(mConnection);
 			mBound = false;
-			mCallbackText.setText("Unbinding.");
+			// mCallbackText.setText("Unbinding.");
+			Toast.makeText(getApplicationContext(), "Unbinding",
+					Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -197,8 +210,8 @@ public class MapViewActivity extends MapActivity {
 		setContentView(R.layout.map_view_activity);
 
 		/* Added by CALLE */
-		mCallbackText = (TextView) findViewById(R.id.callback);
-		mCallbackText.setText("Not attached.");
+		Toast.makeText(getApplicationContext(), "Not attached",
+				Toast.LENGTH_SHORT).show();
 
 		MapView mapView = (MapView) findViewById(R.id.mapview);
 

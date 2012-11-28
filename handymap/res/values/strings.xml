@@ -13,5 +13,9 @@
     <string name="temp">temp</string>
     <string name="title_activity_sensor_tilt">title_activity_sensor_tilt</string>
     <string name="title_activity_rotating_map">title_activity_rotating_map</string>
+    <string name="hapticguidetest">HapticGuideTest</string>
+    <string name="remote_service_started">Remote service started</string>
+    <string name="remote_service_stopped">Remote service stopped</string>
+    <string name="guidingservice">GuidingService</string>
 
 </resources>
