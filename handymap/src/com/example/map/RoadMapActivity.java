@@ -66,7 +66,6 @@ public class RoadMapActivity extends MapActivity {
 		mRotateView = new RotateView(this);
         //end new
 		
-		
         mapView = (MapView) findViewById(R.id.mapview);
         
         //new
@@ -81,10 +80,8 @@ public class RoadMapActivity extends MapActivity {
 		int initZoom = (int) (0.8 * (double) maxZoom);
         //
         
-        
         //mapView.setBuiltInZoomControls(true);
               
-        
         mc = mapView.getController();
         mc.setZoom(initZoom);
         //Start and goal GeoPoints here

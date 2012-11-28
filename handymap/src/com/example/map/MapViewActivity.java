@@ -37,8 +37,9 @@ public class MapViewActivity extends MapActivity {
 	private final String TAG = RoadMapActivity.class.getSimpleName();
 	private MapView mapView;
 	private MapController mc;
-	private MyLocationOverlay mMyLocationOverlay = null;
 	private boolean mModeCompass = false;
+
+	private MyLocationOverlay mMyLocationOverlay = null;
 	private SensorManager mSensorManager;
 	private LinearLayout mRotateViewContainer;
 	private RotateView mRotateView;
@@ -57,7 +58,7 @@ public class MapViewActivity extends MapActivity {
         //end new
 		
         mapView = (MapView) findViewById(R.id.mapview);
-        //mMyLocationOverlay = new MyLocationOverlay(this, mapView);
+        mMyLocationOverlay = new MyLocationOverlay(this, mapView);
         
         mapView.setBuiltInZoomControls(false);              
         
@@ -180,7 +181,7 @@ public class MapViewActivity extends MapActivity {
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.button_compass:
-			//MyLocationOverlay.isCompassEnabled()
+			mMyLocationOverlay.isCompassEnabled();
 			toogleRotateView(mModeCompass);
 			break;
 		}
