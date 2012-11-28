@@ -25,8 +25,11 @@ public class GuidingService extends Service implements SensorEventListener {
 
 	private static final String TAG = GuidingService.class.getSimpleName();
 
-	/** Command to the service to display a message */
+	/** Command to the service */
 	static final int MSG_SAY_HELLO = 1;
+	static final int MSG_SET_VALUE = 2;
+	static final int MSG_REGISTER_CLIENT = 3;
+	static final int MSG_UNREGISTER_CLIENT = 4;
 
 	private SensorManager sensorManager;
 	private long lastUpdate;
