@@ -292,8 +292,9 @@ public class GuidingService extends Service implements SensorEventListener {
 			// provider,
 			// Toast.LENGTH_LONG).show();
 			Log.i(TAG, "GPS not Enabled: " + provider);
-			Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-			startActivity(intent);
+			// Intent intent = new
+			// Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+			// startActivity(intent);
 		}
 
 	}
@@ -336,7 +337,7 @@ public class GuidingService extends Service implements SensorEventListener {
 
 	private int toGeoPointFormat(Location currPos) {
 		// ENDAST LATITUD FÖR TILLFÄLLET!
-//		return (int) (currPos.getLatitude() * 1E6);
+		// return (int) (currPos.getLatitude() * 1E6);
 		return (int) (80.200 * 1E6);
 	}
 
