@@ -1,16 +1,9 @@
 package com.example.map;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import org.haptimap.hcimodules.guiding.HapticGuide;
 import org.haptimap.hcimodules.guiding.HapticGuideEventListener;
 import org.haptimap.hcimodules.util.MyLocationModule;
 import org.haptimap.hcimodules.util.WayPoint;
-
-import com.mindtherobot.samples.tweetservice.TweetCollectorService;
 
 import android.app.Service;
 import android.content.Intent;
@@ -20,14 +13,20 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Handler;
 import android.os.IBinder;
-import android.os.RemoteException;
+import android.os.Message;
+import android.os.Messenger;
 import android.provider.Settings;
 import android.util.Log;
+import android.widget.Toast;
 
 public class GuidingService extends Service implements SensorEventListener {
 
 	private static final String TAG = GuidingService.class.getSimpleName();
+
+	/** Command to the service to display a message */
+	static final int MSG_SAY_HELLO = 1;
 
 	private SensorManager sensorManager;
 	private long lastUpdate;
@@ -36,62 +35,42 @@ public class GuidingService extends Service implements SensorEventListener {
 	private Location nextPos;
 	private HapticGuide theGuide;
 
-	private Timer timer;
-
-	private TimerTask updateTask = new TimerTask() {
+	/**
+	 * Handler of incoming messages from clients.
+	 */
+	class IncomingHandler extends Handler {
 		@Override
-		public void run() {
-			Log.i(TAG, "Timer task doing work");
-
-			try {
-				synchronized (listeners) {
-					for (GuidingServiceListener listener : listeners) {
-						try {
-							listener.handlePositionsUpdated();
-						} catch (RemoteException e) {
-							Log.w(TAG, "Failed to notify listener " + listener,
-									e);
-						}
-					}
-				}
-			} catch (Throwable t) { /*
-									 * you should always ultimately catch all
-									 * exceptions in timer tasks, or they will
-									 * be sunk
-									 */
-				Log.e(TAG, "Failed to retrieve the position results", t);
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case MSG_SAY_HELLO:
+				Toast.makeText(getApplicationContext(), "hello!",
+						Toast.LENGTH_SHORT).show();
+				break;
+			default:
+				super.handleMessage(msg);
 			}
 		}
-	};
+	}
 
-	private List<GuidingServiceListener> listeners = new ArrayList<GuidingServiceListener>();
+	/**
+	 * Target we publish for clients to send messages to IncomingHandler.
+	 */
+	final Messenger mMessenger = new Messenger(new IncomingHandler());
 
-	private GuidingServiceApi.Stub apiEndpoint = new GuidingServiceApi.Stub() {
-
-		public void addListener(GuidingServiceListener listener)
-				throws RemoteException {
-
-			synchronized (listeners) {
-				listeners.add(listener);
-			}
-		}
-
-		public void removeListener(GuidingServiceListener listener)
-				throws RemoteException {
-
-			synchronized (listeners) {
-				listeners.remove(listener);
-			}
-		}
-
-	};
+	/**
+	 * When binding to the service, we return an interface to our messenger for
+	 * sending messages to the service.
+	 */
+	@Override
+	public IBinder onBind(Intent intent) {
+		Toast.makeText(getApplicationContext(), "binding", Toast.LENGTH_SHORT)
+				.show();
+		return mMessenger.getBinder();
+	}
 
 	public void onCreate() {
 		super.onCreate();
 		Log.i(TAG, "Service creating");
-
-		timer = new Timer("TweetCollectorTimer");
-		timer.schedule(updateTask, 1000L, 1000L);
 
 		checkEnableGPS();
 
@@ -249,16 +228,6 @@ public class GuidingService extends Service implements SensorEventListener {
 			startActivity(intent);
 		}
 
-	}
-
-	@Override
-	public IBinder onBind(Intent intent) {
-		if (GuidingService.class.getName().equals(intent.getAction())) {
-			Log.d(TAG, "Bound by intent " + intent);
-			return apiEndpoint;
-		} else {
-			return null;
-		}
 	}
 
 }
