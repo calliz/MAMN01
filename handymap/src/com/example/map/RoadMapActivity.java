@@ -318,11 +318,11 @@ public class RoadMapActivity extends MapActivity {
 		if(userPoint==null)
 			mMyLocationOverlay.runOnFirstFix(new Runnable() { public void run() {
 				userPoint=mMyLocationOverlay.getMyLocation();
-				if(userPoint!=null)
-					mc.animateTo(userPoint);
+				//if(userPoint!=null)
+					//mc.animateTo(userPoint);
 
 		        }});
-		else mc.animateTo(userPoint);
+		//else mc.animateTo(userPoint);
 	}
 
 	@Override
