@@ -220,14 +220,15 @@ public class MapViewActivity extends MapActivity {
 		
 		//shows the my location dot centered on your last known location
 		mMyLocationOverlay.enableMyLocation();
+		
 		if(userPoint==null)
 			mMyLocationOverlay.runOnFirstFix(new Runnable() { public void run() {
 				userPoint=mMyLocationOverlay.getMyLocation();
-				if(userPoint!=null)
-					mc.animateTo(userPoint);
+				//if(userPoint!=null)
+					//mc.animateTo(userPoint);
 
 		        }});
-		else mc.animateTo(userPoint);
+//		else mc.animateTo(userPoint);*/
 	}
 
 	@Override
