@@ -29,8 +29,10 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.example.rotate.RotateView;
 import com.google.android.maps.GeoPoint;
@@ -217,13 +219,6 @@ public class MapViewActivity extends MapActivity {
 	}
 
 	@Override
-	protected void onStop() {
-		super.onStop();
-		// Unbind from the service
-		doUnbindService();
-	}
-
-	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map_view_activity);
@@ -371,6 +366,87 @@ public class MapViewActivity extends MapActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.activity_main, menu);
 		return true;
+	}
+
+	// new
+	public void onClick(View v) {
+		switch (v.getId()) {
+		case R.id.button_compass:
+			mMyLocationOverlay.isCompassEnabled();
+			toogleRotateView(mModeCompass);
+			break;
+		}
+	}
+
+	@SuppressWarnings("deprecation")
+	private void toogleRotateView(boolean compassMode) {
+		if (compassMode) {
+			mSensorManager.unregisterListener(mRotateView);
+			mRotateView.removeAllViews();
+			mRotateViewContainer.removeAllViews();
+			mRotateViewContainer.addView(mapView);
+			mMyLocationOverlay.disableCompass();
+			mModeCompass = false;
+		} else {
+			mRotateViewContainer.removeAllViews();
+			mRotateView.removeAllViews();
+			mRotateView.addView(mapView);
+			mRotateViewContainer.addView(mRotateView);
+			mapView.setClickable(true);
+			mSensorManager.registerListener(mRotateView,
+					SensorManager.SENSOR_ORIENTATION,
+					SensorManager.SENSOR_DELAY_UI);
+			mMyLocationOverlay.enableCompass();
+			mModeCompass = true;
+		}
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+
+		toogleRotateView(!mModeCompass);
+		ToggleButton toggleCompassButton = (ToggleButton) findViewById(R.id.button_compass);
+		toggleCompassButton.setChecked(mModeCompass);
+
+		// shows the my location dot centered on your last known location
+		mMyLocationOverlay.enableMyLocation();
+
+		if (userPoint == null)
+			mMyLocationOverlay.runOnFirstFix(new Runnable() {
+				public void run() {
+					userPoint = mMyLocationOverlay.getMyLocation();
+					// if(userPoint!=null)
+					// mc.animateTo(userPoint);
+
+				}
+			});
+		// else mc.animateTo(userPoint);*/
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		mMyLocationOverlay.disableCompass();
+	}
+
+	// Called during the activity life cycle,
+	// when instance state should be saved/restored
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		// Save instance-specific state
+		super.onSaveInstanceState(outState);
+		// remember the compass mode state
+		outState.putBoolean(SAVED_STATE_COMPASS_MODE, mModeCompass);
+	}
+
+	@SuppressWarnings("deprecation")
+	@Override
+	protected void onStop() {
+		mSensorManager.unregisterListener(mRotateView);
+		mMyLocationOverlay.disableMyLocation();
+		doUnbindService();
+		super.onStop();
 	}
 
 	public static ArrayList<GeoPoint> getDirections(double lat1, double lon1,
