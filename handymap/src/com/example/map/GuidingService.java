@@ -2,11 +2,15 @@ package com.example.map;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.haptimap.hcimodules.guiding.HapticGuide;
 import org.haptimap.hcimodules.guiding.HapticGuideEventListener;
 import org.haptimap.hcimodules.util.MyLocationModule;
 import org.haptimap.hcimodules.util.WayPoint;
+
+import com.mindtherobot.samples.tweetservice.TweetCollectorService;
 
 import android.app.Service;
 import android.content.Intent;
@@ -20,7 +24,6 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.provider.Settings;
 import android.util.Log;
-import android.widget.Toast;
 
 public class GuidingService extends Service implements SensorEventListener {
 
@@ -30,16 +33,36 @@ public class GuidingService extends Service implements SensorEventListener {
 	private long lastUpdate;
 	private MyLocationModule myLocation;
 	private Location currentPos;
+	private Location nextPos;
 	private HapticGuide theGuide;
 
-	// private Timer timer;
-	//
-	// private TimerTask updateTask = new TimerTask() {
-	// @Override
-	// public void run() {
-	// Log.i(TAG, "Timer task doing work");
-	// }
-	// };
+	private Timer timer;
+
+	private TimerTask updateTask = new TimerTask() {
+		@Override
+		public void run() {
+			Log.i(TAG, "Timer task doing work");
+
+			try {
+				synchronized (listeners) {
+					for (GuidingServiceListener listener : listeners) {
+						try {
+							listener.handlePositionsUpdated();
+						} catch (RemoteException e) {
+							Log.w(TAG, "Failed to notify listener " + listener,
+									e);
+						}
+					}
+				}
+			} catch (Throwable t) { /*
+									 * you should always ultimately catch all
+									 * exceptions in timer tasks, or they will
+									 * be sunk
+									 */
+				Log.e(TAG, "Failed to retrieve the position results", t);
+			}
+		}
+	};
 
 	private List<GuidingServiceListener> listeners = new ArrayList<GuidingServiceListener>();
 
@@ -67,8 +90,8 @@ public class GuidingService extends Service implements SensorEventListener {
 		super.onCreate();
 		Log.i(TAG, "Service creating");
 
-		// timer = new Timer("TweetCollectorTimer");
-		// timer.schedule(updateTask, 1000L, 1000L);
+		timer = new Timer("TweetCollectorTimer");
+		timer.schedule(updateTask, 1000L, 1000L);
 
 		checkEnableGPS();
 
@@ -77,6 +100,8 @@ public class GuidingService extends Service implements SensorEventListener {
 		myLocation.onStart();
 
 		currentPos = null;
+
+		nextPos = null;
 
 		theGuide = new HapticGuide(this);
 
@@ -95,9 +120,9 @@ public class GuidingService extends Service implements SensorEventListener {
 			}
 
 			public void onDestinationReached(long[] pattern) { //
-				Toast.makeText(GuidingService.this, "You have arrived!", //
-						Toast.LENGTH_SHORT).show();
-				Log.i(TAG, "onDestinationReached!");
+				// Toast.makeText(GuidingService.this, "You have arrived!", //
+				// Toast.LENGTH_SHORT).show();
+				Log.i(TAG, "You have arrived at your goal destination!!!");
 			}
 		});
 
@@ -113,16 +138,18 @@ public class GuidingService extends Service implements SensorEventListener {
 	}
 
 	private void guideToSavedPosition() {
-		if (currentPos != null) {
+		if (nextPos != null) {
 
-			WayPoint goal = new WayPoint("goal", currentPos);
+			WayPoint goal = new WayPoint("goal", nextPos);
 
 			theGuide.setNextDestination(goal);
 
 			theGuide.onStart();
 		} else {
-			Toast.makeText(GuidingService.this, "no GPS signal - cannot guide",
-					Toast.LENGTH_SHORT).show();
+			// Toast.makeText(GuidingService.this,
+			// "no GPS signal - cannot guide",
+			// Toast.LENGTH_SHORT).show();
+			Log.i(TAG, "no GPS signal - cannot guide");
 		}
 		// Log.i(TAG, "guide button");
 	}
@@ -132,16 +159,19 @@ public class GuidingService extends Service implements SensorEventListener {
 		// currentPos.setLatitude(55.600459);
 		// currentPos.setLongitude(12.96725);
 		if (currentPos == null) {
-			Toast.makeText(GuidingService.this,
-					"no GPS signal - no position set", Toast.LENGTH_SHORT)
-					.show();
+			// Toast.makeText(GuidingService.this,
+			// "No GPS signal - no current position set",
+			// Toast.LENGTH_SHORT).show();
+			Log.i(TAG, "No GPS signal - no current position set");
 
 		} else {
-			Toast.makeText(
-					GuidingService.this,
-					"location set= " + currentPos.getLatitude() + ", "
-							+ currentPos.getLongitude(), Toast.LENGTH_SHORT)
-					.show();
+			// Toast.makeText(
+			// GuidingService.this,
+			// "Current location set to: " + currentPos.getLatitude()
+			// + ", " + currentPos.getLongitude(),
+			// Toast.LENGTH_SHORT).show();
+			Log.i(TAG, "Current location set to: " + currentPos.getLatitude()
+					+ ", " + currentPos.getLongitude());
 		}
 		Log.i(TAG, "" + myLocation.getCurrentLocation());
 	}
@@ -174,11 +204,13 @@ public class GuidingService extends Service implements SensorEventListener {
 				return;
 			}
 			lastUpdate = actualTime;
-			Toast.makeText(this, "A new position has been chosen",
-					Toast.LENGTH_SHORT).show();
+			// Toast.makeText(this, "A new position has been chosen",
+			// Toast.LENGTH_SHORT).show();
+			//
+			// Log.i(TAG, "" + myLocation.getCurrentLocation());
 
 			// UPDATE POSITION ON RADARMAP AND START GUIDING WITH A DETAILED
-			// MAPVIEW
+			// MAPVIEW - probably NOT!
 
 			// Intent myIntent = new Intent(StartActivityRadar.this,
 			// MapViewActivity.class);
@@ -205,11 +237,14 @@ public class GuidingService extends Service implements SensorEventListener {
 				+ LocationManager.GPS_PROVIDER)
 				|| provider.equals(LocationManager.GPS_PROVIDER)) {
 			// GPS Enabled
-			Toast.makeText(GuidingService.this, "GPS Enabled: " + provider,
-					Toast.LENGTH_LONG).show();
+			// Toast.makeText(GuidingService.this, "GPS Enabled: " + provider,
+			// Toast.LENGTH_LONG).show();
+			Log.i(TAG, "GPS Enabled: " + provider);
 		} else {
-			Toast.makeText(GuidingService.this, "GPS not Enabled: " + provider,
-					Toast.LENGTH_LONG).show();
+			// Toast.makeText(GuidingService.this, "GPS not Enabled: " +
+			// provider,
+			// Toast.LENGTH_LONG).show();
+			Log.i(TAG, "GPS not Enabled: " + provider);
 			Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
 			startActivity(intent);
 		}
@@ -217,8 +252,13 @@ public class GuidingService extends Service implements SensorEventListener {
 	}
 
 	@Override
-	public IBinder onBind(Intent arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public IBinder onBind(Intent intent) {
+		if (GuidingService.class.getName().equals(intent.getAction())) {
+			Log.d(TAG, "Bound by intent " + intent);
+			return apiEndpoint;
+		} else {
+			return null;
+		}
 	}
+
 }
