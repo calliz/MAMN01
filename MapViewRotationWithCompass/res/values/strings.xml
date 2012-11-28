@@ -1,8 +1,0 @@
-<resources>
-
-    <string name="app_name">"MapView Compass Rotation"</string>
-    <string name="hello_world">Hello, rotating mapview!</string>
-    <string name="compass_on">Compass on</string>
-    <string name="compass_off">Compass off</string>
-
-</resources>

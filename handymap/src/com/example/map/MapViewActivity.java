@@ -37,8 +37,9 @@ public class MapViewActivity extends MapActivity {
 	private final String TAG = RoadMapActivity.class.getSimpleName();
 	private MapView mapView;
 	private MapController mc;
-	private MyLocationOverlay mMyLocationOverlay = null;
 	private boolean mModeCompass = false;
+
+	private MyLocationOverlay mMyLocationOverlay = null;
 	private SensorManager mSensorManager;
 	private LinearLayout mRotateViewContainer;
 	private RotateView mRotateView;
@@ -133,8 +134,7 @@ public class MapViewActivity extends MapActivity {
     	}
 		
 	}
-
-    
+	
     private void addGeoPoints(ArrayList<GP> all_geo_points) {//55.70462000000001, 13.191360
     	all_geo_points.add(new GP(55.70462000000001,  13.191360));
 		all_geo_points.add(new GP(55.721056,  13.21277));
@@ -181,7 +181,7 @@ public class MapViewActivity extends MapActivity {
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.button_compass:
-			//MyLocationOverlay.isCompassEnabled()
+			mMyLocationOverlay.isCompassEnabled();
 			toogleRotateView(mModeCompass);
 			break;
 		}
