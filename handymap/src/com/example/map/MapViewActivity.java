@@ -28,6 +28,7 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
@@ -53,6 +54,13 @@ public class MapViewActivity extends MapActivity {
 			// representation of that from the raw IBinder object.
 			mService = new Messenger(service);
 			mBound = true;
+			Toast.makeText(getApplicationContext(), "Bound to service",
+					Toast.LENGTH_SHORT).show();
+			Log.i("MapViewActivity", "Bound to service");
+
+			MapView mapView = (MapView) findViewById(R.id.mapview);
+
+			sayHello(mapView);
 		}
 
 		public void onServiceDisconnected(ComponentName className) {
@@ -80,6 +88,9 @@ public class MapViewActivity extends MapActivity {
 	protected void onStart() {
 		super.onStart();
 		// Bind to the service
+		Toast.makeText(getApplicationContext(),
+				"Trying to bind to the service", Toast.LENGTH_SHORT).show();
+		Log.i("MapViewActivity", "Trying to bind to service");
 		bindService(new Intent(this, GuidingService.class), mConnection,
 				Context.BIND_AUTO_CREATE);
 	}
@@ -100,6 +111,7 @@ public class MapViewActivity extends MapActivity {
 		setContentView(R.layout.map_view_activity);
 
 		MapView mapView = (MapView) findViewById(R.id.mapview);
+
 		mapView.setBuiltInZoomControls(false);
 
 		MapController mc = mapView.getController();

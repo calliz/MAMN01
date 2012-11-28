@@ -43,7 +43,8 @@ public class GuidingService extends Service implements SensorEventListener {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case MSG_SAY_HELLO:
-				Toast.makeText(getApplicationContext(), "hello!",
+				Log.i(TAG, "Hello from client");
+				Toast.makeText(getApplicationContext(), "Hello from Client",
 						Toast.LENGTH_SHORT).show();
 				break;
 			default:
@@ -63,8 +64,9 @@ public class GuidingService extends Service implements SensorEventListener {
 	 */
 	@Override
 	public IBinder onBind(Intent intent) {
-		Toast.makeText(getApplicationContext(), "binding", Toast.LENGTH_SHORT)
-				.show();
+		Toast.makeText(getApplicationContext(), "Binding client to service",
+				Toast.LENGTH_SHORT).show();
+		Log.i(TAG, "Binding client to service");
 		return mMessenger.getBinder();
 	}
 
@@ -101,7 +103,7 @@ public class GuidingService extends Service implements SensorEventListener {
 			public void onDestinationReached(long[] pattern) { //
 				// Toast.makeText(GuidingService.this, "You have arrived!", //
 				// Toast.LENGTH_SHORT).show();
-				Log.i(TAG, "You have arrived at your goal destination!!!");
+				Log.i(TAG, "You have arrived at your final destination!!!");
 			}
 		});
 
@@ -152,7 +154,7 @@ public class GuidingService extends Service implements SensorEventListener {
 			Log.i(TAG, "Current location set to: " + currentPos.getLatitude()
 					+ ", " + currentPos.getLongitude());
 		}
-		Log.i(TAG, "" + myLocation.getCurrentLocation());
+		// Log.i(TAG, "" + myLocation.getCurrentLocation());
 	}
 
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
