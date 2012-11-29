@@ -9,7 +9,7 @@
     <string name="radarview">radarview</string>
     <string name="title_activity_map">MapActivity</string>
     <string name="pigeonview">pigeonview</string>
-    <string name="title_activity_map_view_activity">title_activity_map_view_activity</string>
+    <string name="title_activity_map_view_activity">map_view_no_service</string>
     <string name="temp">temp</string>
     <string name="title_activity_sensor_tilt">title_activity_sensor_tilt</string>
     <string name="title_activity_rotating_map">title_activity_rotating_map</string>
