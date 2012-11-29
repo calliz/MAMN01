@@ -38,7 +38,8 @@ public class TiltListener implements SensorEventListener {
 				mValuesOrientation);
 		if(Math.abs(mValuesOrientation[1])<0.5){
 			//Lägg till kod här
-			//Log.e("Scanning points.","Scanning points.");
+			
+			Log.e("Angle between points.",Double.toString(CalcAngleFromNorth.calculateAngle(55.709114, 13.167778,55.714976, 13.212644)));
 		}else{
 			//Annars här
 			//Log.e("Not Scanning points.","Not Scanning points.");
