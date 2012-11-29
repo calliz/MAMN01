@@ -90,10 +90,12 @@ public class MapViewActivity extends MapActivity {
     	
     	int radius = getRadius(all_gp, currentLocation);
     	int step = radius / nbrOfCircles;
-    	step *= 90;//85
+    	step *= 90;
     	
     	for(int i = 1; i <= nbrOfCircles; i++){
-    		mapView.getOverlays().add(new CircleOverlay(null, currentLocation.getLongi(), currentLocation.getLat(), step * i));
+
+    		mapView.getOverlays().add(new CircleOverlay(null, currentLocation.getLat(), currentLocation.getLongi(), step * i));
+    		
     	}
     	
     }

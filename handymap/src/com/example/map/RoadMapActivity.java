@@ -84,6 +84,7 @@ public class RoadMapActivity extends MapActivity {
                     
         if(all_geo_points.size() == 0){
         	Log.d("RoadMap", "Arraylist zero elem");
+        	
         }
         GeoPoint moveTo = all_geo_points.get(0);
         mc.animateTo(moveTo);//ska ha current location
@@ -103,10 +104,11 @@ public class RoadMapActivity extends MapActivity {
     
     public boolean pointReached(){//returns true if finaldestination reached.
     	
-    	if(all_geo_points.size() == 1)
+    	if(all_geo_points.size() == 0)
     		return true;
     	
     	all_geo_points.remove(0);
+    	setNewRoad(new RoadOverlay(all_geo_points));
     	currentTarget = all_geo_points.get(0);  
     	
 		return false;
