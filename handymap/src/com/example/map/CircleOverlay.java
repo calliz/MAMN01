@@ -20,8 +20,8 @@ public class CircleOverlay extends Overlay {
 
      public CircleOverlay(Context _context, double _lat, double _lon, float radius ) {//lat/long är current location
             context = _context;
-            mLat = 55.705644;//_lat;
-            mLon = 	13.186916;//_lon;
+            mLat = _lat;
+            mLon = _lon;
             mRadius = radius;
      }
 

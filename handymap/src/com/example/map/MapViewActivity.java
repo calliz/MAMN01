@@ -68,7 +68,6 @@ public class MapViewActivity extends MapActivity {
 		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		mRotateViewContainer = (LinearLayout) findViewById(R.id.rotating_view);
 		mRotateView = new RotateView(this);
-		// end new
 
 		mapView = (MapView) findViewById(R.id.mapview);
 		mMyLocationOverlay = new MyLocationOverlay(this, mapView);
@@ -215,8 +214,8 @@ public class MapViewActivity extends MapActivity {
 
 		for (int i = 1; i <= nbrOfCircles; i++) {
 			mapView.getOverlays().add(
-					new CircleOverlay(null, currentLocation.getLongi(),
-							currentLocation.getLat(), step * i));
+					new CircleOverlay(null, currentLocation.getLat(),
+							currentLocation.getLongi(), step * i));
 		}
 
 	}

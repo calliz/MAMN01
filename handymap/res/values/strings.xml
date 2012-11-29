@@ -3,18 +3,13 @@
     <string name="app_name">map</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
-    <string name="title_activity_start">StartActivity</string>
-    <string name="title_activity_main">MainActivity</string>
-    <string name="title_activity_start_activity_radar">StartActivityRadar</string>
-    <string name="radarview">radarview</string>
-    <string name="title_activity_map">MapActivity</string>
-    <string name="pigeonview">pigeonview</string>
-    <string name="title_activity_map_view_activity">title_activity_map_view_activity</string>
     <string name="temp">temp</string>
     <string name="title_activity_sensor_tilt">title_activity_sensor_tilt</string>
     <string name="title_activity_rotating_map">title_activity_rotating_map</string>
     <string name="title_activity_road_map_activity">title_activity_road_map_activity</string>
     <string name="compass_off">compass_off</string>
     <string name="compass_on">compass_on</string>
+    <string name="mapviewactivity">MapView</string>
+    <string name="roadmap">RoadMap</string>
 
 </resources>

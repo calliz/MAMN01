@@ -20,7 +20,7 @@
 
         <activity
             android:name=".MapViewActivity"
-            android:label="@string/title_activity_map_view_activity"
+            android:label="@string/mapviewactivity"
             android:theme="@android:style/Theme.NoTitleBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -31,7 +31,7 @@
         <activity
             android:name=".RoadMapActivity"
             android:configChanges="orientation|keyboardHidden"
-            android:label="@string/title_activity_road_map_activity"
+            android:label="@string/roadmap"
             android:launchMode="standard"
             android:theme="@android:style/Theme.NoTitleBar"
             android:windowSoftInputMode="adjustPan" >
