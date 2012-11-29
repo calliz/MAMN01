@@ -20,26 +20,33 @@ import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
-import com.google.android.maps.MyLocationOverlay;
 
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+
+
+import android.hardware.SensorManager;
+import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ToggleButton;
 
-public class MapViewActivity extends MapActivity {
-	
+import com.google.android.maps.MyLocationOverlay;
+
+public class RoadMapActivity extends MapActivity {
+	private RoadOverlay roadOverlay;
+	private ArrayList<GeoPoint> all_geo_points;
+	private GeoPoint currentTarget;
+
+
 	private static final String SAVED_STATE_COMPASS_MODE = "com.touchboarder.example.modecompass";
 	@SuppressWarnings("unused")
 	private final String TAG = RoadMapActivity.class.getSimpleName();
 	private MapView mapView;
 	private MapController mc;
-	private boolean mModeCompass = false;
-
 	private MyLocationOverlay mMyLocationOverlay = null;
+	private boolean mModeCompass = false;
 	private SensorManager mSensorManager;
 	private LinearLayout mRotateViewContainer;
 	private RotateView mRotateView;
@@ -48,90 +55,70 @@ public class MapViewActivity extends MapActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.map_view_activity);
+        setContentView(R.layout.road_map_activity);
+        
 		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		mRotateViewContainer = (LinearLayout) findViewById(R.id.rotating_view);
 		mRotateView = new RotateView(this);
-        //end new
-		
+        		
         mapView = (MapView) findViewById(R.id.mapview);
+        
         mMyLocationOverlay = new MyLocationOverlay(this, mapView);
+
+		// Optional MapView settings
+		mapView.getOverlays().add(mMyLocationOverlay);
+		mapView.setBuiltInZoomControls(false);
+		mapView.setTraffic(false);
+		mapView.setSatellite(false);
+		int maxZoom = mapView.getMaxZoomLevel();
+		int initZoom = (int) (0.8 * (double) maxZoom);
         
-        mapView.setBuiltInZoomControls(false);              
         
+        mapView.setBuiltInZoomControls(true);
+              
         mc = mapView.getController();
-        //ArrayList<GeoPoint> all_geo_points = getDirections(55.70462000000001, 13.191360, 55.604640, 13.00382);
-        ArrayList<GP> all_geo_points = new ArrayList<GP>();
-        addGeoPoints(all_geo_points);     
+        mc.setZoom(initZoom);
+        //Start and goal GeoPoints here
         
-        GeoPoint moveTo = new GeoPoint(all_geo_points.get(0).getLatE6() , all_geo_points.get(0).getLongiE6());
+        all_geo_points = getDirections(55.70462000000001, 13.191360, 55.709114,  13.167778);
+                    
+        if(all_geo_points.size() == 0){
+        	Log.d("RoadMap", "Arraylist zero elem");
+        }
+        GeoPoint moveTo = all_geo_points.get(0);
         mc.animateTo(moveTo);//ska ha current location
         mc.setZoom(14);
-        //mapView.getOverlays().add(new RoadOverlay(all_geo_points));//For the next view
+         roadOverlay = new RoadOverlay(all_geo_points);
+        mapView.getOverlays().add(roadOverlay);//For the next view
         //createRightZoomLevel(mc, all_geo_points);
-        int nbrOfCircles = 3;
-        GP currentLocation = all_geo_points.get(0);
-        blackBackround(mapView, currentLocation);
-        addCircles(mapView, all_geo_points, nbrOfCircles, currentLocation);
-        addLocationMarkers(mapView, all_geo_points);
-//        mc.animateTo(new GeoPoint(latitudeE6, longitudeE6));
-
+        
+        all_geo_points.remove(0);//remove the first node
+        currentTarget = all_geo_points.get(0);
         
 		 if (savedInstanceState != null) {
 			 mModeCompass = savedInstanceState.getBoolean(SAVED_STATE_COMPASS_MODE, false); 
 		 }
+        
     }
     
-    public void blackBackround(MapView mapView, GP currentLocation){
-    	mapView.getOverlays().add(new BlackOverlay(null, currentLocation.getLat(), currentLocation.getLongi(), 4000));
-    }
-    
-    public void addCircles(MapView mapView, ArrayList<GP> all_gp, int nbrOfCircles, GP currentLocation){
+    public boolean pointReached(){//returns true if finaldestination reached.
     	
-    	int radius = getRadius(all_gp, currentLocation);
-    	int step = radius / nbrOfCircles;
-    	step *= 90;//85
+    	if(all_geo_points.size() == 1)
+    		return true;
     	
-    	for(int i = 1; i <= nbrOfCircles; i++){
-    		mapView.getOverlays().add(new CircleOverlay(null, currentLocation.getLongi(), currentLocation.getLat(), step * i));
-    	}
+    	all_geo_points.remove(0);
+    	currentTarget = all_geo_points.get(0);  
+    	
+		return false;
     	
     }
     
-    private int getRadius(ArrayList<GP> all_gp, GP currentLocation) {
-	
-    	
-    	int longestDistance = 0;
-
-    	for (GP item : all_gp) {
-	    	int lat = (int) item.getLat();
-	    	int lon = (int) item.getLongi();
-	    	
-	    	int thisDistance = (int) Math.sqrt(lat*lat + lon*lon);
-	    	if(thisDistance > longestDistance){
-	    		
-	    		longestDistance = thisDistance;  		
-	    	}	   	
-    	 }
-    	Log.d("getRadius", "Radius = " + longestDistance);
-		return longestDistance;
-	}
-
-	private void addLocationMarkers(MapView mapView,
-			ArrayList<GP> all_geo_points) {
-		int radius = 200;
-		GP currentLocation = all_geo_points.get(0);
-		mapView.getOverlays().add(new CurrentPositionOverlay(null, currentLocation.getLat(), currentLocation.getLongi(), radius -50));//currentposition
-		
-		
-    	for(GP point: all_geo_points){
-    		if(point != currentLocation){
-    			mapView.getOverlays().add(new LocationOverlay(null, point.getLat(), point.getLongi(), radius));
-    		}
-    	}
-		
-	}
-	
+    public void setNewRoad(RoadOverlay newOverlay){
+    	mapView.getOverlays().remove(roadOverlay);
+    	mapView.getOverlays().add(newOverlay);
+    }
+    
+    
     private void addGeoPoints(ArrayList<GP> all_geo_points) {//55.70462000000001, 13.191360
     	all_geo_points.add(new GP(55.70462000000001,  13.191360));
 		all_geo_points.add(new GP(55.721056,  13.21277));
@@ -174,84 +161,6 @@ public class MapViewActivity extends MapActivity {
         getMenuInflater().inflate(R.menu.activity_main, menu);
         return true;
     }
-    
-	public void onClick(View v) {
-		switch (v.getId()) {
-		case R.id.button_compass:
-			mMyLocationOverlay.isCompassEnabled();
-			toogleRotateView(mModeCompass);
-			break;
-		}
-	}
-	
-	@SuppressWarnings("deprecation")
-	private void toogleRotateView(boolean compassMode){
-		if (compassMode) {
-			mSensorManager.unregisterListener(mRotateView);
-			mRotateView.removeAllViews();
-			mRotateViewContainer.removeAllViews();
-			mRotateViewContainer.addView(mapView);
-			mMyLocationOverlay.disableCompass();
-			mModeCompass = false;
-		} else {
-			mRotateViewContainer.removeAllViews();
-			mRotateView.removeAllViews();
-			mRotateView.addView(mapView);
-			mRotateViewContainer.addView(mRotateView);
-			mapView.setClickable(true);
-			mSensorManager.registerListener(mRotateView,
-					SensorManager.SENSOR_ORIENTATION,
-					SensorManager.SENSOR_DELAY_UI);
-			mMyLocationOverlay.enableCompass();
-			mModeCompass = true;
-		}	
-	}
-	
-	@Override
-	public void onResume() {
-		super.onResume();
-
-		toogleRotateView(!mModeCompass);
-		ToggleButton toggleCompassButton = (ToggleButton) findViewById(R.id.button_compass);
-		toggleCompassButton.setChecked(mModeCompass);
-		
-		//shows the my location dot centered on your last known location
-		mMyLocationOverlay.enableMyLocation();
-		
-		if(userPoint==null)
-			mMyLocationOverlay.runOnFirstFix(new Runnable() { public void run() {
-				userPoint=mMyLocationOverlay.getMyLocation();
-				//if(userPoint!=null)
-					//mc.animateTo(userPoint);
-
-		        }});
-//		else mc.animateTo(userPoint);*/
-	}
-
-	@Override
-	public void onPause() {
-		super.onPause();
-		mMyLocationOverlay.disableCompass();
-	}
-	
-	// Called during the activity life cycle, 
-	// when instance state should be saved/restored
-	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		// Save instance-specific state
-		super.onSaveInstanceState(outState);
-		//remember the compass mode state
-		outState.putBoolean(SAVED_STATE_COMPASS_MODE, mModeCompass);
-	}
-
-	@SuppressWarnings("deprecation")
-	@Override
-	protected void onStop() {
-		mSensorManager.unregisterListener(mRotateView);	
-		mMyLocationOverlay.disableMyLocation();
-		super.onStop();
-	}
-
     
     public static ArrayList<GeoPoint> getDirections(double lat1, double lon1, double lat2, double lon2) {
     	
@@ -348,6 +257,91 @@ public class MapViewActivity extends MapActivity {
     		return lat;
     	}
     }
+    
+    //new 	
+
+	public void onClick(View v) {
+		switch (v.getId()) {
+		case R.id.button_compass:
+			//mMyLocationOverlay.isCompassEnabled();
+			toogleRotateView(mModeCompass);
+			break;
+		}
+	}
+	
+	/**
+	 * Since we only can have one instance of the Google APIs MapView, we
+	 * add/remove the same MapView between the mRotateViewContainer 
+	 * and the RotateView when we toggle.
+	 *  
+	 * @param compassMode - if false : turns it on 
+	 */
+	@SuppressWarnings("deprecation")
+	private void toogleRotateView(boolean compassMode){
+		if (compassMode) {
+			mSensorManager.unregisterListener(mRotateView);
+			mRotateView.removeAllViews();
+			mRotateViewContainer.removeAllViews();
+			mRotateViewContainer.addView(mapView);
+			mMyLocationOverlay.disableCompass();
+			mModeCompass = false;
+		} else {
+			mRotateViewContainer.removeAllViews();
+			mRotateView.removeAllViews();
+			mRotateView.addView(mapView);
+			mRotateViewContainer.addView(mRotateView);
+			mapView.setClickable(true);
+			mSensorManager.registerListener(mRotateView,
+					SensorManager.SENSOR_ORIENTATION,
+					SensorManager.SENSOR_DELAY_UI);
+			mMyLocationOverlay.enableCompass();
+			mModeCompass = true;
+		}	
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+
+		toogleRotateView(!mModeCompass);
+		ToggleButton toggleCompassButton = (ToggleButton) findViewById(R.id.button_compass);
+		toggleCompassButton.setChecked(mModeCompass);
+		
+		//shows the my location dot centered on your last known location
+		mMyLocationOverlay.enableMyLocation();
+		if(userPoint==null)
+			mMyLocationOverlay.runOnFirstFix(new Runnable() { public void run() {
+				userPoint=mMyLocationOverlay.getMyLocation();
+				//if(userPoint!=null)
+					//mc.animateTo(userPoint);
+
+		        }});
+		//else mc.animateTo(userPoint);
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		mMyLocationOverlay.disableCompass();
+	}
+	
+	// Called during the activity life cycle, 
+	// when instance state should be saved/restored
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		// Save instance-specific state
+		super.onSaveInstanceState(outState);
+		//remember the compass mode state
+		outState.putBoolean(SAVED_STATE_COMPASS_MODE, mModeCompass);
+	}
+
+	@SuppressWarnings("deprecation")
+	@Override
+	protected void onStop() {
+		mSensorManager.unregisterListener(mRotateView);	
+		mMyLocationOverlay.disableMyLocation();
+		super.onStop();
+	}
 
 }
 
