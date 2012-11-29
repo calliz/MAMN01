@@ -296,7 +296,7 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 
 		fetchAndSetCurrentPosition();
 
-		guideToSavedPosition();
+		
 
 		theGuide.registerHapticGuideEventListener(new HapticGuideEventListener() {
 
@@ -318,18 +318,18 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 	}
 
 	private void guideToSavedPosition() {
-		nextPos = GeoToLocation(new GeoPoint(55705248, 13186763));
+//		nextPos = GeoToLocation(new GeoPoint(55705248, 13186763));
 
-		if (nextPos != null) {
+		if (currentPos != null) {
 
-			WayPoint goal = new WayPoint("goal", nextPos);
+			WayPoint goal = new WayPoint("goal", currentPos);
 
 			theGuide.setNextDestination(goal);
 
 			theGuide.onStart();
 			Log.i(TAG,
-					"Guiding to " + nextPos.getLatitude() + ", "
-							+ nextPos.getLongitude());
+					"Guiding to " + currentPos.getLatitude() + ", "
+							+ currentPos.getLongitude());
 		} else {
 			// Toast.makeText(GuidingService.this,
 			// "no GPS signal - cannot guide",
@@ -348,25 +348,31 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 
 	private void fetchAndSetCurrentPosition() {
 		// currentPos = myLocation.getCurrentLocation();
+//		Location tmpPos = myLocation.getCurrentLocation();
 
-		currentPos = GeoToLocation(new GeoPoint(55715024, 13212687));
+		// Lund central
+		currentPos = GeoToLocation(new GeoPoint(55705249,13186836));
 
 		// currentPos.setLatitude(55.600459);
 		// currentPos.setLongitude(12.96725);
-		if (currentPos == null) {
-			// Toast.makeText(GuidingService.this,
-			// "No GPS signal - no current position set",
-			// Toast.LENGTH_SHORT).show();
+		if (myLocation.getCurrentLocation() == null) {
+			 Toast.makeText(MapViewActivity.this,
+			 "No GPS signal - using Designcentrum IKDC fixed position instead",
+			 Toast.LENGTH_SHORT).show();
 			Log.i(TAG, "No GPS signal - no current position set");
 
 		} else {
-			Toast.makeText(
-					MapViewActivity.this,
-					"Current location set to: " + currentPos.getLatitude()
-							+ ", " + currentPos.getLongitude(),
-					Toast.LENGTH_SHORT).show();
-			Log.i(TAG, "Current location set to: " + currentPos.getLatitude()
-					+ ", " + currentPos.getLongitude());
+//			Toast.makeText(
+//					MapViewActivity.this,
+//					"Current location set to: " + currentPos.getLatitude()
+//							+ ", " + currentPos.getLongitude(),
+//					Toast.LENGTH_SHORT).show();
+//			Log.i(TAG, "Current location set to: " + currentPos.getLatitude()
+//					+ ", " + currentPos.getLongitude());
+			Toast.makeText(MapViewActivity.this,
+					 "GPS signal is good - current position is set",
+					 Toast.LENGTH_SHORT).show();
+			
 		}
 		// Log.i(TAG, "" + myLocation.getCurrentLocation());
 	}
@@ -430,11 +436,11 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 
 	private void addGeoPoints(ArrayList<GP> all_geo_points) {// 55.70462000000001,
 																// 13.191360
-		all_geo_points.add(new GP(55.715024, 13.212687)); // Designcentrum IKDC
+		all_geo_points.add(new GP(55.714721, 13.212725)); // Designcentrum IKDC
 		// all_geo_points.add(new GP(55.594958,12.972125)); // Major
 		// Nilssonsgatan Malmö
 		all_geo_points.add(new GP(55.721056, 13.21277));
-		all_geo_points.add(new GP(55.709114, 13.167778));
+		all_geo_points.add(new GP(55.7216,13.219979));
 		all_geo_points.add(new GP(55.724313, 13.204009));
 		all_geo_points.add(new GP(55.698377, 13.216635));
 		all_geo_points.add(new GP(55.705248, 13.186763));// Lund centralstation
@@ -514,7 +520,7 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 	@Override
 	public void onResume() {
 		super.onResume();
-
+		theGuide.onResume();
 		toogleRotateView(!mModeCompass);
 		ToggleButton toggleCompassButton = (ToggleButton) findViewById(R.id.button_compass);
 		toggleCompassButton.setChecked(mModeCompass);
@@ -538,6 +544,7 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 	public void onPause() {
 		super.onPause();
 		mMyLocationOverlay.disableCompass();
+		theGuide.onPause();
 	}
 
 	// Called during the activity life cycle,
@@ -696,6 +703,8 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 			lastUpdate = actualTime;
 			Toast.makeText(this, "A new position has been chosen",
 					Toast.LENGTH_SHORT).show();
+			
+			guideToSavedPosition();
 
 			// Log.i(TAG, "" + myLocation.getCurrentLocation());
 
