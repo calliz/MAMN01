@@ -23,6 +23,8 @@ import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.maps.GeoPoint;
+
 public class GuidingService extends Service {
 
 	private static final String TAG = GuidingService.class.getSimpleName();
@@ -89,9 +91,9 @@ public class GuidingService extends Service {
 				Log.i(TAG, "MSG_UNREGISTER_CLIENT");
 				break;
 			case MSG_SET_NEXT_LATITUDE:
-				Toast.makeText(GuidingService.this,
-						"Received next position from client", //
-						Toast.LENGTH_SHORT).show();
+				// Toast.makeText(GuidingService.this,
+				// "Received next position from client", //
+				// Toast.LENGTH_SHORT).show();
 				mValue = msg.arg1;
 				Log.i(TAG, "MSG_SET_NEXT_POSITION");
 				nextPos = toLocationFormat(msg.arg1);
@@ -145,7 +147,7 @@ public class GuidingService extends Service {
 		// Display a notification about us starting.
 		showNotification();
 
-		checkEnableGPS();
+		// checkEnableGPS();
 
 		myLocation = new MyLocationModule(this);
 
@@ -180,6 +182,8 @@ public class GuidingService extends Service {
 	}
 
 	private void guideToSavedPosition() {
+		nextPos = GeoToLocation(new GeoPoint(55705248,13186763));
+
 		if (nextPos != null) {
 
 			WayPoint goal = new WayPoint("goal", nextPos);
@@ -187,6 +191,9 @@ public class GuidingService extends Service {
 			theGuide.setNextDestination(goal);
 
 			theGuide.onStart();
+			Log.i(TAG,
+					"Guiding to " + nextPos.getLatitude() + ", "
+							+ nextPos.getLongitude());
 		} else {
 			// Toast.makeText(GuidingService.this,
 			// "no GPS signal - cannot guide",
@@ -197,7 +204,10 @@ public class GuidingService extends Service {
 	}
 
 	private void fetchAndSetCurrentPosition() {
-		currentPos = myLocation.getCurrentLocation();
+//		 currentPos = myLocation.getCurrentLocation();
+
+		currentPos = GeoToLocation(new GeoPoint(55715024,13212687));
+
 		// currentPos.setLatitude(55.600459);
 		// currentPos.setLongitude(12.96725);
 		if (currentPos == null) {
@@ -207,15 +217,22 @@ public class GuidingService extends Service {
 			Log.i(TAG, "No GPS signal - no current position set");
 
 		} else {
-			// Toast.makeText(
-			// GuidingService.this,
-			// "Current location set to: " + currentPos.getLatitude()
-			// + ", " + currentPos.getLongitude(),
-			// Toast.LENGTH_SHORT).show();
+			Toast.makeText(
+					GuidingService.this,
+					"Current location set to: " + currentPos.getLatitude()
+							+ ", " + currentPos.getLongitude(),
+					Toast.LENGTH_SHORT).show();
 			Log.i(TAG, "Current location set to: " + currentPos.getLatitude()
 					+ ", " + currentPos.getLongitude());
 		}
 		// Log.i(TAG, "" + myLocation.getCurrentLocation());
+	}
+
+	private Location GeoToLocation(GeoPoint gp) {
+		Location location = new Location("dummyProvider");
+		location.setLatitude(gp.getLatitudeE6() / 1E6);
+		location.setLongitude(gp.getLongitudeE6() / 1E6);
+		return location;
 	}
 
 	@Override
@@ -225,7 +242,7 @@ public class GuidingService extends Service {
 		mNM.cancel(R.string.remote_service_started);
 
 		// Tell the user we stopped.
-		Toast.makeText(this, TAG + " : " + R.string.guidingservice_stopped,
+		Toast.makeText(this, getString(R.string.guidingservice_stopped),
 				Toast.LENGTH_SHORT).show();
 
 		// AVREGISTRERA SENSORLYSSNARE???

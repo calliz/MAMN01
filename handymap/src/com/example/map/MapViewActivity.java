@@ -12,6 +12,10 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
+import org.haptimap.hcimodules.guiding.HapticGuide;
+import org.haptimap.hcimodules.guiding.HapticGuideEventListener;
+import org.haptimap.hcimodules.util.MyLocationModule;
+import org.haptimap.hcimodules.util.WayPoint;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -24,6 +28,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -60,6 +65,11 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 	private SensorManager confirmSensorManager;
 	private long lastUpdate;
 
+	private MyLocationModule myLocation;
+	private Location currentPos;
+	private Location nextPos;
+	private HapticGuide theGuide;
+
 	// new
 
 	/** Messenger for communicating with the service. */
@@ -76,14 +86,14 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case GuidingService.MSG_SET_NEXT_LATITUDE:
-				Toast.makeText(getApplicationContext(),
-						"Received from service: " + msg.arg1,
-						Toast.LENGTH_SHORT).show();
+				// Toast.makeText(getApplicationContext(),
+				// "Received from service: " + msg.arg1,
+				// Toast.LENGTH_SHORT).show();
 				break;
 			case GuidingService.MSG_GET_CURRENT_POSITION:
-				Toast.makeText(getApplicationContext(),
-						"Received from service: " + msg.arg1,
-						Toast.LENGTH_SHORT).show();
+				// Toast.makeText(getApplicationContext(),
+				// "Received from service: " + msg.arg1,
+				// Toast.LENGTH_SHORT).show();
 				break;
 			default:
 				super.handleMessage(msg);
@@ -110,8 +120,8 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 			// service through an IDL interface, so get a client-side
 			// representation of that from the raw service object.
 			mService = new Messenger(service);
-//			Toast.makeText(getApplicationContext(), "Attached",
-//					Toast.LENGTH_SHORT).show();
+			// Toast.makeText(getApplicationContext(), "Attached",
+			// Toast.LENGTH_SHORT).show();
 
 			// We want to monitor the service for as long as we are
 			// connected to it.
@@ -122,12 +132,12 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 				mService.send(msg);
 
 				// Give it some value as an example.
-				msg = Message.obtain(null,
-						GuidingService.MSG_GET_CURRENT_POSITION, 0, 0);
+				// msg = Message.obtain(null,
+				// GuidingService.MSG_GET_CURRENT_POSITION, 0, 0);
 
 				// msg = Message.obtain(null, GuidingService.MSG_SET_VALUE,
 				// (int) (55.698377 * 1E6), (int) (13.216635 * 1E6), 0);
-				mService.send(msg);
+				// mService.send(msg);
 			} catch (RemoteException e) {
 				// In this case the service has crashed before we could even
 				// do anything with it; we can count on soon being
@@ -137,9 +147,10 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 			}
 
 			// As part of the sample, tell the user what happened.
-//			Toast.makeText(getApplicationContext(), "Remote service connected",
-//					Toast.LENGTH_SHORT).show();
-//			Log.i("MapViewActivity", "Remote service connected");
+			// Toast.makeText(getApplicationContext(),
+			// "Remote service connected",
+			// Toast.LENGTH_SHORT).show();
+			// Log.i("MapViewActivity", "Remote service connected");
 
 			// MapView mapView = (MapView) findViewById(R.id.mapview);
 			//
@@ -152,8 +163,8 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 			mService = null;
 
 			// As part of the sample, tell the user what happened.
-			Toast.makeText(getApplicationContext(),
-					"Remote service disconnected", Toast.LENGTH_SHORT).show();
+			// Toast.makeText(getApplicationContext(),
+			// "Remote service disconnected", Toast.LENGTH_SHORT).show();
 			Log.i("MapViewActivity", "Remote service disconnected");
 		}
 	};
@@ -165,8 +176,9 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 		bindService(new Intent(getApplicationContext(), GuidingService.class),
 				mConnection, Context.BIND_AUTO_CREATE);
 		mBound = true;
-//		Toast.makeText(getApplicationContext(), "Binding", Toast.LENGTH_SHORT)
-//				.show();
+		// Toast.makeText(getApplicationContext(), "Binding",
+		// Toast.LENGTH_SHORT)
+		// .show();
 	}
 
 	void doUnbindService() {
@@ -188,8 +200,8 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 			// Detach our existing connection.
 			unbindService(mConnection);
 			mBound = false;
-//			Toast.makeText(getApplicationContext(), "Unbinding",
-//					Toast.LENGTH_SHORT).show();
+			// Toast.makeText(getApplicationContext(), "Unbinding",
+			// Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -210,7 +222,7 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 	protected void onStart() {
 		super.onStart();
 		// Bind to the service
-		doBindService();
+//		doBindService();
 	}
 
 	@Override
@@ -223,8 +235,9 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 		// end new
 
 		/* Added by CALLE */
-//		Toast.makeText(getApplicationContext(), "Not attached",
-//				Toast.LENGTH_SHORT).show();
+		// Toast.makeText(getApplicationContext(), "Not attached",
+		// Toast.LENGTH_SHORT).show();
+		startHapticGuide();
 
 		mapView = (MapView) findViewById(R.id.mapview);
 		mMyLocationOverlay = new MyLocationOverlay(this, mapView);
@@ -268,6 +281,94 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 				SensorManager.SENSOR_DELAY_NORMAL);
 
 		lastUpdate = System.currentTimeMillis();
+	}
+
+	private void startHapticGuide() {
+		myLocation = new MyLocationModule(this);
+
+		myLocation.onStart();
+
+		currentPos = null;
+
+		nextPos = null;
+
+		theGuide = new HapticGuide(this);
+
+		fetchAndSetCurrentPosition();
+
+		guideToSavedPosition();
+
+		theGuide.registerHapticGuideEventListener(new HapticGuideEventListener() {
+
+			public void onRateIntervalChanged(int millis) {
+
+			}
+
+			public void onPrepared(boolean onPrepared) {
+
+			}
+
+			public void onDestinationReached(long[] pattern) { //
+				// Toast.makeText(GuidingService.this, "You have arrived!", //
+				// Toast.LENGTH_SHORT).show();
+				Log.i(TAG, "You have arrived at your final destination!!!");
+			}
+		});
+
+	}
+
+	private void guideToSavedPosition() {
+		nextPos = GeoToLocation(new GeoPoint(55705248, 13186763));
+
+		if (nextPos != null) {
+
+			WayPoint goal = new WayPoint("goal", nextPos);
+
+			theGuide.setNextDestination(goal);
+
+			theGuide.onStart();
+			Log.i(TAG,
+					"Guiding to " + nextPos.getLatitude() + ", "
+							+ nextPos.getLongitude());
+		} else {
+			// Toast.makeText(GuidingService.this,
+			// "no GPS signal - cannot guide",
+			// Toast.LENGTH_SHORT).show();
+			Log.i(TAG, "no GPS signal - cannot guide");
+		}
+		// Log.i(TAG, "guide button");
+	}
+
+	private Location GeoToLocation(GeoPoint gp) {
+		Location location = new Location("dummyProvider");
+		location.setLatitude(gp.getLatitudeE6() / 1E6);
+		location.setLongitude(gp.getLongitudeE6() / 1E6);
+		return location;
+	}
+
+	private void fetchAndSetCurrentPosition() {
+		// currentPos = myLocation.getCurrentLocation();
+
+		currentPos = GeoToLocation(new GeoPoint(55715024, 13212687));
+
+		// currentPos.setLatitude(55.600459);
+		// currentPos.setLongitude(12.96725);
+		if (currentPos == null) {
+			// Toast.makeText(GuidingService.this,
+			// "No GPS signal - no current position set",
+			// Toast.LENGTH_SHORT).show();
+			Log.i(TAG, "No GPS signal - no current position set");
+
+		} else {
+			Toast.makeText(
+					MapViewActivity.this,
+					"Current location set to: " + currentPos.getLatitude()
+							+ ", " + currentPos.getLongitude(),
+					Toast.LENGTH_SHORT).show();
+			Log.i(TAG, "Current location set to: " + currentPos.getLatitude()
+					+ ", " + currentPos.getLongitude());
+		}
+		// Log.i(TAG, "" + myLocation.getCurrentLocation());
 	}
 
 	public void blackBackround(MapView mapView, GP currentLocation) {
@@ -329,13 +430,15 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 
 	private void addGeoPoints(ArrayList<GP> all_geo_points) {// 55.70462000000001,
 																// 13.191360
-		all_geo_points.add(new GP(55.70462000000001, 13.191360));
+		all_geo_points.add(new GP(55.715024, 13.212687)); // Designcentrum IKDC
+		// all_geo_points.add(new GP(55.594958,12.972125)); // Major
+		// Nilssonsgatan Malmö
 		all_geo_points.add(new GP(55.721056, 13.21277));
 		all_geo_points.add(new GP(55.709114, 13.167778));
 		all_geo_points.add(new GP(55.724313, 13.204009));
 		all_geo_points.add(new GP(55.698377, 13.216635));
-		all_geo_points.add(new GP(55.707095, 13.189404));// Close to epicentrum
-															// of Lund
+		all_geo_points.add(new GP(55.705248, 13.186763));// Lund centralstation
+		// all_geo_points.add(new GP(55.599141,12.983584));// Kronprinsen malmö
 	}
 
 	public void createRightZoomLevel(MapController mc,
@@ -452,7 +555,7 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 	protected void onStop() {
 		compassSensorManager.unregisterListener(mRotateView);
 		mMyLocationOverlay.disableMyLocation();
-		doUnbindService();
+//		doUnbindService();
 		super.onStop();
 	}
 
@@ -597,7 +700,7 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 			// Log.i(TAG, "" + myLocation.getCurrentLocation());
 
 			// UPDATE POSITION ON RADARMAP AND START GUIDING WITH A DETAILED
-			// MAPVIEW - probably NOT!
+			// MAPVIEW
 
 			// Intent myIntent = new Intent(MapViewActivity.this,
 			// RoadMapActivity.class);
@@ -605,4 +708,12 @@ public class MapViewActivity extends MapActivity implements SensorEventListener 
 		}
 	}
 
+	@Override
+	protected void onDestroy() {
+		myLocation.onDestroy();
+		theGuide.onDestroy();
+		super.onDestroy();
+	}
+
+	
 }

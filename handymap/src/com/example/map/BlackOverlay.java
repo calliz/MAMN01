@@ -21,8 +21,8 @@ public class BlackOverlay extends Overlay {
 
      public BlackOverlay(Context _context, double _lat, double _lon, float radius ) {
             context = _context;
-            mLat = 55.70462000000001;//_lat;
-            mLon = 13.191360;//_lon;
+            mLat = 55.715024;//_lat;
+            mLon = 13.212687;//_lon;
             mRadius = 15000;
      }
 
