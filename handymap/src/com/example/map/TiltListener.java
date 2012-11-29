@@ -5,6 +5,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.util.Log;
 
 public class TiltListener implements SensorEventListener {
 	private float[] mValuesMagnet = new float[3];
@@ -37,8 +38,10 @@ public class TiltListener implements SensorEventListener {
 				mValuesOrientation);
 		if(Math.abs(mValuesOrientation[1])<0.5){
 			//Lägg till kod här
+			//Log.e("Scanning points.","Scanning points.");
 		}else{
 			//Annars här
+			//Log.e("Not Scanning points.","Not Scanning points.");
 		}
 	};
 }
