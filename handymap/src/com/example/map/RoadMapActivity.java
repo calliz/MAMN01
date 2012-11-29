@@ -25,7 +25,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 
-
+import android.app.Activity;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.View;
@@ -84,7 +87,6 @@ public class RoadMapActivity extends MapActivity {
                     
         if(all_geo_points.size() == 0){
         	Log.d("RoadMap", "Arraylist zero elem");
-        	
         }
         GeoPoint moveTo = all_geo_points.get(0);
         mc.animateTo(moveTo);//ska ha current location
@@ -99,8 +101,22 @@ public class RoadMapActivity extends MapActivity {
 		 if (savedInstanceState != null) {
 			 mModeCompass = savedInstanceState.getBoolean(SAVED_STATE_COMPASS_MODE, false); 
 		 }
+SensorManager sensorManager = (SensorManager) this
+				.getSystemService(SENSOR_SERVICE);
+		final SensorEventListener mEventListener = new TiltListener(sensorManager);
+		setListners(sensorManager, mEventListener);
         
     }
+
+private void setListners(SensorManager sensorManager,
+			SensorEventListener mEventListener) {
+		sensorManager.registerListener(mEventListener,
+				sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+				SensorManager.SENSOR_DELAY_NORMAL);
+		sensorManager.registerListener(mEventListener,
+				sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
+				SensorManager.SENSOR_DELAY_NORMAL);
+	}
     
     public boolean pointReached(){//returns true if finaldestination reached.
     	
@@ -108,7 +124,6 @@ public class RoadMapActivity extends MapActivity {
     		return true;
     	
     	all_geo_points.remove(0);
-    	setNewRoad(new RoadOverlay(all_geo_points));
     	currentTarget = all_geo_points.get(0);  
     	
 		return false;
