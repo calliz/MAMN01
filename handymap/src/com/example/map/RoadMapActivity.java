@@ -36,11 +36,9 @@ import com.google.android.maps.MyLocationOverlay;
 
 public class RoadMapActivity extends MapActivity {
 	private RoadOverlay roadOverlay;
-	//private MapView mapView;
 	private ArrayList<GeoPoint> all_geo_points;
 	private GeoPoint currentTarget;
-	
-	//new
+
 
 	private static final String SAVED_STATE_COMPASS_MODE = "com.touchboarder.example.modecompass";
 	@SuppressWarnings("unused")
@@ -53,22 +51,18 @@ public class RoadMapActivity extends MapActivity {
 	private LinearLayout mRotateViewContainer;
 	private RotateView mRotateView;
 	private GeoPoint userPoint;
-	
-	//end new
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.road_map_activity);
-        //new
+        
 		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		mRotateViewContainer = (LinearLayout) findViewById(R.id.rotating_view);
 		mRotateView = new RotateView(this);
-        //end new
-		
+        		
         mapView = (MapView) findViewById(R.id.mapview);
         
-        //new
         mMyLocationOverlay = new MyLocationOverlay(this, mapView);
 
 		// Optional MapView settings
@@ -78,7 +72,7 @@ public class RoadMapActivity extends MapActivity {
 		mapView.setSatellite(false);
 		int maxZoom = mapView.getMaxZoomLevel();
 		int initZoom = (int) (0.8 * (double) maxZoom);
-        //
+        
         
         mapView.setBuiltInZoomControls(true);
               
@@ -97,7 +91,6 @@ public class RoadMapActivity extends MapActivity {
          roadOverlay = new RoadOverlay(all_geo_points);
         mapView.getOverlays().add(roadOverlay);//For the next view
         //createRightZoomLevel(mc, all_geo_points);
-//        mc.animateTo(new GeoPoint(latitudeE6, longitudeE6));
         
         all_geo_points.remove(0);//remove the first node
         currentTarget = all_geo_points.get(0);
@@ -349,8 +342,6 @@ public class RoadMapActivity extends MapActivity {
 		mMyLocationOverlay.disableMyLocation();
 		super.onStop();
 	}
-
-    //end new
 
 }
 
