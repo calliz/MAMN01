@@ -80,16 +80,17 @@ public class RoadMapActivity extends MapActivity {
 		int initZoom = (int) (0.8 * (double) maxZoom);
         //
         
-        //mapView.setBuiltInZoomControls(true);
+        mapView.setBuiltInZoomControls(true);
               
         mc = mapView.getController();
         mc.setZoom(initZoom);
         //Start and goal GeoPoints here
         
         all_geo_points = getDirections(55.70462000000001, 13.191360, 55.709114,  13.167778);
-        //ArrayList<GP> all_geo_points = new ArrayList<GP>();
-        //addGeoPoints(all_geo_points);     
-        
+                    
+        if(all_geo_points.size() == 0){
+        	Log.d("RoadMap", "Arraylist zero elem");
+        }
         GeoPoint moveTo = all_geo_points.get(0);
         mc.animateTo(moveTo);//ska ha current location
         mc.setZoom(14);

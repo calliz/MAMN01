@@ -44,9 +44,6 @@ public class MapViewActivity extends MapActivity {
 	private LinearLayout mRotateViewContainer;
 	private RotateView mRotateView;
 	private GeoPoint userPoint;
-	
-	//new
-	
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
