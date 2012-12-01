@@ -21,6 +21,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
@@ -48,6 +49,7 @@ public class MapViewActivity extends MapActivity {
 	private MapView mapView;
 	private MapController mc;
 	private boolean mModeCompass = false;
+	private LocationOverlay selectedOverlay;
 
 	private MyLocationOverlay mMyLocationOverlay = null;
 	private SensorManager mSensorManager;
@@ -270,7 +272,7 @@ public class MapViewActivity extends MapActivity {
 			if (point != currentLocation) {
 				mapView.getOverlays().add(
 						new LocationOverlay(null, point.getLat(), point
-								.getLongi(), radius));
+								.getLongi(), radius,Color.RED));
 			}
 		}
 
@@ -278,7 +280,7 @@ public class MapViewActivity extends MapActivity {
 
 	public void setBearing(Double deg) {
 		double min_diff = Double.MAX_VALUE;
-		int min_index=-1;
+		int min_index = -1;
 		for (int i = 1; i < all_geo_points.size(); i++) {
 			double diff = Math.abs(deg
 					- CalcAngleFromNorth.calculateAngle(
@@ -292,12 +294,23 @@ public class MapViewActivity extends MapActivity {
 			}
 		}
 		if (min_diff < 10 && min_index != -1) {
-			Log.e("Found", "Pointing at lat:" + all_geo_points.get(min_index).lat
-					+ " longi:" + all_geo_points.get(min_index).longi);
+
+			Log.e("Found", "Pointing at lat:"
+					+ all_geo_points.get(min_index).lat + " longi:"
+					+ all_geo_points.get(min_index).longi);
 			Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-			 
+
+			if (selectedOverlay == null) {
+				GP active = all_geo_points.get(min_index);
+				selectedOverlay = new LocationOverlay(null, active.getLat(),
+						active.getLongi(), 400, Color.GREEN);
+				mapView.getOverlays().add(selectedOverlay);
+			}
 			// Vibrate for 300 milliseconds
 			v.vibrate(50);
+		}else{
+			mapView.getOverlays().remove(selectedOverlay);
+			selectedOverlay = null;
 		}
 	}
 

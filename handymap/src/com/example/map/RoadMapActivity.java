@@ -31,6 +31,7 @@ import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
+import com.google.android.maps.Overlay;
 
 public class RoadMapActivity extends MapActivity {
 	private RoadOverlay roadOverlay;
@@ -268,11 +269,14 @@ public class RoadMapActivity extends MapActivity {
 	private class GP {// possible extends GeoPoint
 		double lat;
 		double longi;
+		private Overlay overlay;
 
 		public GP(double lat, double longi) {
 			this.lat = lat;
 			this.longi = longi;
+			this.overlay = overlay;
 		}
+		
 
 		public int getLongiE6() {
 			return (int) (longi * 1e6);
