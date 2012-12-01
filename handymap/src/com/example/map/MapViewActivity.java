@@ -50,6 +50,7 @@ public class MapViewActivity extends MapActivity {
 	private MapController mc;
 	private boolean mModeCompass = false;
 	private LocationOverlay selectedOverlay;
+	private GP selectedLocation;
 
 	private MyLocationOverlay mMyLocationOverlay = null;
 	private SensorManager mSensorManager;
@@ -280,6 +281,7 @@ public class MapViewActivity extends MapActivity {
 
 	public void setBearing(Double deg) {
 		double min_diff = Double.MAX_VALUE;
+		Toast toast = null;
 		int min_index = -1;
 		for (int i = 1; i < all_geo_points.size(); i++) {
 			double diff = Math.abs(deg
@@ -298,19 +300,22 @@ public class MapViewActivity extends MapActivity {
 			Log.e("Found", "Pointing at lat:"
 					+ all_geo_points.get(min_index).lat + " longi:"
 					+ all_geo_points.get(min_index).longi);
-			Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
 			if (selectedOverlay == null) {
 				GP active = all_geo_points.get(min_index);
 				selectedOverlay = new LocationOverlay(null, active.getLat(),
 						active.getLongi(), 400, Color.GREEN);
 				mapView.getOverlays().add(selectedOverlay);
+				selectedLocation = active;
+				toast = Toast.makeText(this,selectedLocation.getName(), 1);
+				toast.show();
 			}
 			// Vibrate for 300 milliseconds
-			v.vibrate(50);
+			//v.vibrate(50);
 		}else{
 			mapView.getOverlays().remove(selectedOverlay);
 			selectedOverlay = null;
+			selectedLocation = null;
 		}
 	}
 
@@ -322,12 +327,12 @@ public class MapViewActivity extends MapActivity {
 																// // Stora
 																// gr�br�dersgatan
 																// Lund
-		all_geo_points.add(new GP(55.714976, 13.212644)); // Designcentrum IKDC
-		all_geo_points.add(new GP(55.721056, 13.21277));
-		all_geo_points.add(new GP(55.709114, 13.167778));
-		all_geo_points.add(new GP(55.724313, 13.204009));
-		all_geo_points.add(new GP(55.698377, 13.216635));
-		all_geo_points.add(new GP(55.705644, 13.186916)); // Lunds
+		all_geo_points.add(new GP(55.714976, 13.212644, "Designcentrum (IKDC)")); // Designcentrum IKDC
+		all_geo_points.add(new GP(55.721056, 13.21277,"Magistratsvägen 57O"));
+		all_geo_points.add(new GP(55.709114, 13.167778, "Vildandsvägen 18H"));
+		all_geo_points.add(new GP(55.724313, 13.204009, "Fäladstorget 12"));
+		all_geo_points.add(new GP(55.698377, 13.216635, "Dalbyvägen 38"));
+		all_geo_points.add(new GP(55.705644, 13.186916, "Bangatan 1")); // Lunds
 															// centralstation
 		// all_geo_points.add(new GP(55.707095, 13.189404));// Close to
 		// epicentrum
@@ -534,12 +539,18 @@ public class MapViewActivity extends MapActivity {
 	private class GP {// possible extends GeoPoint
 		double lat;
 		double longi;
+		CharSequence locationName;
 
-		public GP(double lat, double longi) {
+		public GP(double lat, double longi, CharSequence locationName) {
 			this.lat = lat;
 			this.longi = longi;
+			this.locationName = locationName;
 		}
 
+		public CharSequence getName(){
+			return locationName;
+		}
+		
 		public int getLongiE6() {
 			return (int) (longi * 1e6);
 		}
