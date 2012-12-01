@@ -20,9 +20,14 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import android.content.Context;
+import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -44,13 +49,14 @@ public class MapViewActivity extends MapActivity {
 	private MapView mapView;
 	private MapController mc;
 	private boolean mModeCompass = false;
+	private LocationOverlay selectedOverlay;
 
 	private MyLocationOverlay mMyLocationOverlay = null;
 	private SensorManager mSensorManager;
 	private LinearLayout mRotateViewContainer;
 	private RotateView mRotateView;
 	private GeoPoint userPoint;
-
+	private ArrayList<GP> all_geo_points;
 	/* HaptiMap attributes */
 	private MyLocationModule myLocation;
 	private Location currentPos;
@@ -77,7 +83,7 @@ public class MapViewActivity extends MapActivity {
 		mc = mapView.getController();
 		// ArrayList<GeoPoint> all_geo_points = getDirections(55.70462000000001,
 		// 13.191360, 55.604640, 13.00382);
-		ArrayList<GP> all_geo_points = new ArrayList<GP>();
+		all_geo_points = new ArrayList<GP>();
 		addGeoPoints(all_geo_points);
 
 		GeoPoint moveTo = new GeoPoint(all_geo_points.get(0).getLatE6(),
@@ -98,6 +104,22 @@ public class MapViewActivity extends MapActivity {
 			mModeCompass = savedInstanceState.getBoolean(
 					SAVED_STATE_COMPASS_MODE, false);
 		}
+		SensorManager sensorManager = (SensorManager) this
+				.getSystemService(SENSOR_SERVICE);
+		final SensorEventListener mEventListener = new CompassListener(
+				sensorManager, this);
+		setListners(sensorManager, mEventListener);
+
+	}
+
+	private void setListners(SensorManager sensorManager,
+			SensorEventListener mEventListener) {
+		sensorManager.registerListener(mEventListener,
+				sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+				SensorManager.SENSOR_DELAY_NORMAL);
+		sensorManager.registerListener(mEventListener,
+				sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
+				SensorManager.SENSOR_DELAY_NORMAL);
 	}
 
 	/* HaptiMap function */
@@ -250,10 +272,46 @@ public class MapViewActivity extends MapActivity {
 			if (point != currentLocation) {
 				mapView.getOverlays().add(
 						new LocationOverlay(null, point.getLat(), point
-								.getLongi(), radius));
+								.getLongi(), radius,Color.RED));
 			}
 		}
 
+	}
+
+	public void setBearing(Double deg) {
+		double min_diff = Double.MAX_VALUE;
+		int min_index = -1;
+		for (int i = 1; i < all_geo_points.size(); i++) {
+			double diff = Math.abs(deg
+					- CalcAngleFromNorth.calculateAngle(
+							all_geo_points.get(0).lat,
+							all_geo_points.get(0).longi,
+							all_geo_points.get(i).lat,
+							all_geo_points.get(i).longi));
+			if (diff < min_diff) {
+				min_diff = diff;
+				min_index = i;
+			}
+		}
+		if (min_diff < 10 && min_index != -1) {
+
+			Log.e("Found", "Pointing at lat:"
+					+ all_geo_points.get(min_index).lat + " longi:"
+					+ all_geo_points.get(min_index).longi);
+			Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
+			if (selectedOverlay == null) {
+				GP active = all_geo_points.get(min_index);
+				selectedOverlay = new LocationOverlay(null, active.getLat(),
+						active.getLongi(), 400, Color.GREEN);
+				mapView.getOverlays().add(selectedOverlay);
+			}
+			// Vibrate for 300 milliseconds
+			v.vibrate(50);
+		}else{
+			mapView.getOverlays().remove(selectedOverlay);
+			selectedOverlay = null;
+		}
 	}
 
 	private void addGeoPoints(ArrayList<GP> all_geo_points) {// 55.70462000000001,
@@ -262,7 +320,7 @@ public class MapViewActivity extends MapActivity {
 																// GP(55.70462000000001,
 																// 13.191360));
 																// // Stora
-																// gråbrödersgatan
+																// grï¿½brï¿½dersgatan
 																// Lund
 		all_geo_points.add(new GP(55.714976, 13.212644)); // Designcentrum IKDC
 		all_geo_points.add(new GP(55.721056, 13.21277));

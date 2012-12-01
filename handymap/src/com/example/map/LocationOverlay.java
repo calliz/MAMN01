@@ -17,17 +17,22 @@ public class LocationOverlay extends Overlay {
     double mLat;
     double mLon;
     float mRadius;
+    Canvas canvas;
+    MapView mapView;
+    private int color;
 
-     public LocationOverlay(Context _context, double _lat, double _lon, float radius ) {
+     public LocationOverlay(Context _context, double _lat, double _lon, float radius, int color ) {
             context = _context;
             mLat = _lat;
             mLon = _lon;
             mRadius = radius;
+            this.color = color;
      }
+     
 
      public void draw(Canvas canvas, MapView mapView, boolean shadow) {
-
          super.draw(canvas, mapView, shadow); 
+         this.canvas = canvas;
 
          Projection projection = mapView.getProjection();
 
@@ -41,7 +46,7 @@ public class LocationOverlay extends Overlay {
          Paint innerCirclePaint;
 
          innerCirclePaint = new Paint();
-         innerCirclePaint.setColor(Color.RED);
+         innerCirclePaint.setColor(color);
          innerCirclePaint.setAlpha(175);
          innerCirclePaint.setAntiAlias(true);
 
