@@ -36,7 +36,7 @@ public class RoadMapActivity extends MapActivity {
 	private RoadOverlay roadOverlay;
 	private ArrayList<GeoPoint> all_geo_points;
 	private GeoPoint currentTarget;
-
+	private Boolean isTilted;
 
 	private static final String SAVED_STATE_COMPASS_MODE = "com.touchboarder.example.modecompass";
 	@SuppressWarnings("unused")
@@ -49,19 +49,19 @@ public class RoadMapActivity extends MapActivity {
 	private LinearLayout mRotateViewContainer;
 	private RotateView mRotateView;
 	private GeoPoint userPoint;
-    
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.road_map_activity);
-        
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.road_map_activity);
+
 		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		mRotateViewContainer = (LinearLayout) findViewById(R.id.rotating_view);
 		mRotateView = new RotateView(this);
-        		
-        mapView = (MapView) findViewById(R.id.mapview);
-        
-        mMyLocationOverlay = new MyLocationOverlay(this, mapView);
+
+		mapView = (MapView) findViewById(R.id.mapview);
+
+		mMyLocationOverlay = new MyLocationOverlay(this, mapView);
 
 		// Optional MapView settings
 		mapView.getOverlays().add(mMyLocationOverlay);
@@ -70,40 +70,42 @@ public class RoadMapActivity extends MapActivity {
 		mapView.setSatellite(false);
 		int maxZoom = mapView.getMaxZoomLevel();
 		int initZoom = (int) (0.8 * (double) maxZoom);
-        
-        
-        mapView.setBuiltInZoomControls(true);
-              
-        mc = mapView.getController();
-        mc.setZoom(initZoom);
-        //Start and goal GeoPoints here
-        
-        all_geo_points = getDirections(55.70462000000001, 13.191360, 55.709114,  13.167778);
-                    
-        if(all_geo_points.size() == 0){
-        	Log.d("RoadMap", "Arraylist zero elem");
-        }
-        GeoPoint moveTo = all_geo_points.get(0);
-        mc.animateTo(moveTo);//ska ha current location
-        mc.setZoom(14);
-         roadOverlay = new RoadOverlay(all_geo_points);
-        mapView.getOverlays().add(roadOverlay);//For the next view
-        //createRightZoomLevel(mc, all_geo_points);
-        
-        all_geo_points.remove(0);//remove the first node
-        currentTarget = all_geo_points.get(0);
-        
-		 if (savedInstanceState != null) {
-			 mModeCompass = savedInstanceState.getBoolean(SAVED_STATE_COMPASS_MODE, false); 
-		 }
-SensorManager sensorManager = (SensorManager) this
-				.getSystemService(SENSOR_SERVICE);
-		final SensorEventListener mEventListener = new TiltListener(sensorManager);
-		setListners(sensorManager, mEventListener);
-        
-    }
 
-private void setListners(SensorManager sensorManager,
+		mapView.setBuiltInZoomControls(true);
+
+		mc = mapView.getController();
+		mc.setZoom(initZoom);
+		// Start and goal GeoPoints here
+
+		all_geo_points = getDirections(55.70462000000001, 13.191360, 55.709114,
+				13.167778);
+
+		if (all_geo_points.size() == 0) {
+			Log.d("RoadMap", "Arraylist zero elem");
+		}
+		GeoPoint moveTo = all_geo_points.get(0);
+		mc.animateTo(moveTo);// ska ha current location
+		mc.setZoom(14);
+		roadOverlay = new RoadOverlay(all_geo_points);
+		mapView.getOverlays().add(roadOverlay);// For the next view
+		// createRightZoomLevel(mc, all_geo_points);
+
+		all_geo_points.remove(0);// remove the first node
+		currentTarget = all_geo_points.get(0);
+
+		if (savedInstanceState != null) {
+			mModeCompass = savedInstanceState.getBoolean(
+					SAVED_STATE_COMPASS_MODE, false);
+		}
+		SensorManager sensorManager = (SensorManager) this
+				.getSystemService(SENSOR_SERVICE);
+		final SensorEventListener mEventListener = new TiltListener(
+				sensorManager, this);
+		setListners(sensorManager, mEventListener);
+
+	}
+
+	private void setListners(SensorManager sensorManager,
 			SensorEventListener mEventListener) {
 		sensorManager.registerListener(mEventListener,
 				sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
@@ -112,184 +114,204 @@ private void setListners(SensorManager sensorManager,
 				sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
 				SensorManager.SENSOR_DELAY_NORMAL);
 	}
-    
-    public boolean pointReached(){//returns true if finaldestination reached.
-    	
-    	if(all_geo_points.size() == 0)
-    		return true;
-    	
-    	all_geo_points.remove(0);
-    	currentTarget = all_geo_points.get(0);  
-    	
+
+	public boolean pointReached() {// returns true if finaldestination reached.
+
+		if (all_geo_points.size() == 0)
+			return true;
+
+		all_geo_points.remove(0);
+		currentTarget = all_geo_points.get(0);
+
 		return false;
-    	
-    }
-    
-    public void setNewRoad(RoadOverlay newOverlay){
-    	mapView.getOverlays().remove(roadOverlay);
-    	mapView.getOverlays().add(newOverlay);
-    }
-    
-    
-    private void addGeoPoints(ArrayList<GP> all_geo_points) {//55.70462000000001, 13.191360
-    	all_geo_points.add(new GP(55.70462000000001,  13.191360));
-		all_geo_points.add(new GP(55.721056,  13.21277));
-		all_geo_points.add(new GP(55.709114,  13.167778));
-		all_geo_points.add(new GP(55.724313, 13.204009));
-		all_geo_points.add(new GP(55.698377, 13.216635));
-		all_geo_points.add(new GP(55.707095,13.189404));//Close to epicentrum of Lund
+
 	}
 
-	public void createRightZoomLevel(MapController mc, ArrayList<GP> all_geo_points){
-    	
-    	int minLatitude = Integer.MAX_VALUE;
-    	int maxLatitude = Integer.MIN_VALUE;
-    	int minLongitude = Integer.MAX_VALUE;
-    	int maxLongitude = Integer.MIN_VALUE;
+	public void setNewRoad(RoadOverlay newOverlay) {
+		mapView.getOverlays().remove(roadOverlay);
+		mapView.getOverlays().add(newOverlay);
+	}
 
-    	// Find the boundaries of the item set
-    	for (GP item : all_geo_points) { //item Contain list of Geopints
-	    	int lat = item.getLatE6();
-	    	int lon = item.getLongiE6();
-	
-	    	maxLatitude = Math.max(lat, maxLatitude);
-	    	minLatitude = Math.min(lat, minLatitude);
-	    	maxLongitude = Math.max(lon, maxLongitude);
-	    	minLongitude = Math.min(lon, minLongitude);
-    	 }
-    	 mc.zoomToSpan(Math.abs(maxLatitude - minLatitude), Math.abs(maxLongitude - minLongitude));
-    
-    	 //mc.animateTo(new GeoPoint((maxLatitude + minLatitude)/2, (maxLongitude + minLongitude)/2 )); 
+	private void addGeoPoints(ArrayList<GP> all_geo_points) {// 55.70462000000001,
+																// 13.191360
+		all_geo_points.add(new GP(55.70462000000001, 13.191360));
+		all_geo_points.add(new GP(55.721056, 13.21277));
+		all_geo_points.add(new GP(55.709114, 13.167778));
+		all_geo_points.add(new GP(55.724313, 13.204009));
+		all_geo_points.add(new GP(55.698377, 13.216635));
+		all_geo_points.add(new GP(55.707095, 13.189404));// Close to epicentrum
+															// of Lund
+	}
 
-    }
-    
-    @Override
-    protected boolean isRouteDisplayed() {
-        return false;
-    }
+	public void createRightZoomLevel(MapController mc,
+			ArrayList<GP> all_geo_points) {
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.activity_main, menu);
-        return true;
-    }
-    
-    public static ArrayList<GeoPoint> getDirections(double lat1, double lon1, double lat2, double lon2) {
-    	
-        String url = "http://maps.googleapis.com/maps/api/directions/xml?origin=" +lat1 + "," + lon1  + "&destination=" + lat2 + "," + lon2 + "&sensor=false&units=metric&mode=walking";
+		int minLatitude = Integer.MAX_VALUE;
+		int maxLatitude = Integer.MIN_VALUE;
+		int minLongitude = Integer.MAX_VALUE;
+		int maxLongitude = Integer.MIN_VALUE;
 
-        String tag[] = { "lat", "lng" };
+		// Find the boundaries of the item set
+		for (GP item : all_geo_points) { // item Contain list of Geopints
+			int lat = item.getLatE6();
+			int lon = item.getLongiE6();
 
-        ArrayList<GeoPoint> list_of_geopoints = new ArrayList<GeoPoint>();
+			maxLatitude = Math.max(lat, maxLatitude);
+			minLatitude = Math.min(lat, minLatitude);
+			maxLongitude = Math.max(lon, maxLongitude);
+			minLongitude = Math.min(lon, minLongitude);
+		}
+		mc.zoomToSpan(Math.abs(maxLatitude - minLatitude),
+				Math.abs(maxLongitude - minLongitude));
 
-        HttpResponse response = null;
+		// mc.animateTo(new GeoPoint((maxLatitude + minLatitude)/2,
+		// (maxLongitude + minLongitude)/2 ));
 
-        try {
+	}
 
-            HttpClient httpClient = new DefaultHttpClient();
+	@Override
+	protected boolean isRouteDisplayed() {
+		return false;
+	}
 
-            HttpContext localContext = new BasicHttpContext();
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.activity_main, menu);
+		return true;
+	}
 
-            HttpPost httpPost = new HttpPost(url);
+	public void tilted(boolean isTilted) {
+		this.isTilted = isTilted;
+	}
 
-            response = httpClient.execute(httpPost, localContext);
+	public static ArrayList<GeoPoint> getDirections(double lat1, double lon1,
+			double lat2, double lon2) {
 
-            InputStream in = response.getEntity().getContent();
+		String url = "http://maps.googleapis.com/maps/api/directions/xml?origin="
+				+ lat1
+				+ ","
+				+ lon1
+				+ "&destination="
+				+ lat2
+				+ ","
+				+ lon2
+				+ "&sensor=false&units=metric&mode=walking";
 
-            DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		String tag[] = { "lat", "lng" };
 
-           Document doc = builder.parse(in);
+		ArrayList<GeoPoint> list_of_geopoints = new ArrayList<GeoPoint>();
 
-            if (doc != null) {
+		HttpResponse response = null;
 
-                NodeList nl1, nl2;
+		try {
 
-                nl1 = doc.getElementsByTagName(tag[0]);
+			HttpClient httpClient = new DefaultHttpClient();
 
-                nl2 = doc.getElementsByTagName(tag[1]);
+			HttpContext localContext = new BasicHttpContext();
 
-                if (nl1.getLength() > 0) {
+			HttpPost httpPost = new HttpPost(url);
 
-                    list_of_geopoints = new ArrayList<GeoPoint>();
+			response = httpClient.execute(httpPost, localContext);
 
-                    for (int i = 0; i < nl1.getLength(); i++) {
+			InputStream in = response.getEntity().getContent();
 
-                        Node node1 = nl1.item(i);
+			DocumentBuilder builder = DocumentBuilderFactory.newInstance()
+					.newDocumentBuilder();
 
-                        Node node2 = nl2.item(i);
+			Document doc = builder.parse(in);
 
-                        double lat = Double.parseDouble(node1.getTextContent());
+			if (doc != null) {
 
-                        double lng = Double.parseDouble(node2.getTextContent());
+				NodeList nl1, nl2;
 
-                        list_of_geopoints.add(new GeoPoint((int) (lat * 1E6), (int) (lng * 1E6)));
+				nl1 = doc.getElementsByTagName(tag[0]);
 
-                    }
+				nl2 = doc.getElementsByTagName(tag[1]);
 
-                } else {
+				if (nl1.getLength() > 0) {
 
-                    // No points found
+					list_of_geopoints = new ArrayList<GeoPoint>();
 
-                }
+					for (int i = 0; i < nl1.getLength(); i++) {
 
-            }
+						Node node1 = nl1.item(i);
 
-        } catch (Exception e) {
+						Node node2 = nl2.item(i);
 
-            e.printStackTrace();
+						double lat = Double.parseDouble(node1.getTextContent());
 
-        }
+						double lng = Double.parseDouble(node2.getTextContent());
 
-        return list_of_geopoints;
+						list_of_geopoints.add(new GeoPoint((int) (lat * 1E6),
+								(int) (lng * 1E6)));
 
-    }
-    
-    private class GP{//possible extends GeoPoint
-    	double lat;
-    	double longi;
-    	
-    	public GP(double lat, double longi){
-    		this.lat = lat;
-    		this.longi = longi;
-    	}
-    	
-    	public int getLongiE6(){
-    		return (int) (longi * 1e6);
-    	}
-    	
-    	public int getLatE6(){
-    		return (int) (lat * 1e6);
-    	}
-    	
-    	public double getLongi(){
-    		return longi;
-    	}
-    	
-    	public double getLat(){
-    		return lat;
-    	}
-    }
-    
-    //new 	
+					}
+
+				} else {
+
+					// No points found
+
+				}
+
+			}
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+
+		}
+
+		return list_of_geopoints;
+
+	}
+
+	private class GP {// possible extends GeoPoint
+		double lat;
+		double longi;
+
+		public GP(double lat, double longi) {
+			this.lat = lat;
+			this.longi = longi;
+		}
+
+		public int getLongiE6() {
+			return (int) (longi * 1e6);
+		}
+
+		public int getLatE6() {
+			return (int) (lat * 1e6);
+		}
+
+		public double getLongi() {
+			return longi;
+		}
+
+		public double getLat() {
+			return lat;
+		}
+	}
+
+	// new
 
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.button_compass:
-			//mMyLocationOverlay.isCompassEnabled();
+			// mMyLocationOverlay.isCompassEnabled();
 			toogleRotateView(mModeCompass);
 			break;
 		}
 	}
-	
+
 	/**
 	 * Since we only can have one instance of the Google APIs MapView, we
-	 * add/remove the same MapView between the mRotateViewContainer 
-	 * and the RotateView when we toggle.
-	 *  
-	 * @param compassMode - if false : turns it on 
+	 * add/remove the same MapView between the mRotateViewContainer and the
+	 * RotateView when we toggle.
+	 * 
+	 * @param compassMode
+	 *            - if false : turns it on
 	 */
 	@SuppressWarnings("deprecation")
-	private void toogleRotateView(boolean compassMode){
+	private void toogleRotateView(boolean compassMode) {
 		if (compassMode) {
 			mSensorManager.unregisterListener(mRotateView);
 			mRotateView.removeAllViews();
@@ -308,7 +330,7 @@ private void setListners(SensorManager sensorManager,
 					SensorManager.SENSOR_DELAY_UI);
 			mMyLocationOverlay.enableCompass();
 			mModeCompass = true;
-		}	
+		}
 	}
 
 	@Override
@@ -318,17 +340,19 @@ private void setListners(SensorManager sensorManager,
 		toogleRotateView(!mModeCompass);
 		ToggleButton toggleCompassButton = (ToggleButton) findViewById(R.id.button_compass);
 		toggleCompassButton.setChecked(mModeCompass);
-		
-		//shows the my location dot centered on your last known location
-		mMyLocationOverlay.enableMyLocation();
-		if(userPoint==null)
-			mMyLocationOverlay.runOnFirstFix(new Runnable() { public void run() {
-				userPoint=mMyLocationOverlay.getMyLocation();
-				//if(userPoint!=null)
-					//mc.animateTo(userPoint);
 
-		        }});
-		//else mc.animateTo(userPoint);
+		// shows the my location dot centered on your last known location
+		mMyLocationOverlay.enableMyLocation();
+		if (userPoint == null)
+			mMyLocationOverlay.runOnFirstFix(new Runnable() {
+				public void run() {
+					userPoint = mMyLocationOverlay.getMyLocation();
+					// if(userPoint!=null)
+					// mc.animateTo(userPoint);
+
+				}
+			});
+		// else mc.animateTo(userPoint);
 	}
 
 	@Override
@@ -336,24 +360,23 @@ private void setListners(SensorManager sensorManager,
 		super.onPause();
 		mMyLocationOverlay.disableCompass();
 	}
-	
-	// Called during the activity life cycle, 
+
+	// Called during the activity life cycle,
 	// when instance state should be saved/restored
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		// Save instance-specific state
 		super.onSaveInstanceState(outState);
-		//remember the compass mode state
+		// remember the compass mode state
 		outState.putBoolean(SAVED_STATE_COMPASS_MODE, mModeCompass);
 	}
 
 	@SuppressWarnings("deprecation")
 	@Override
 	protected void onStop() {
-		mSensorManager.unregisterListener(mRotateView);	
+		mSensorManager.unregisterListener(mRotateView);
 		mMyLocationOverlay.disableMyLocation();
 		super.onStop();
 	}
 
 }
-

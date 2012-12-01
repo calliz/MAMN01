@@ -1,23 +1,21 @@
 package com.example.map;
 
-import android.app.Activity;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.util.Log;
 
-public class TiltListener implements SensorEventListener {
+public class CompassListener implements SensorEventListener {
 	private float[] mValuesMagnet = new float[3];
 	private float[] mValuesAccel = new float[3];
 	private float[] mValuesOrientation = new float[3];
 	private float[] mRotationMatrix = new float[9];
 	private SensorManager sensorManager;
-	private RoadMapActivity roadMap;
-	
-	public TiltListener(SensorManager sensorManager, RoadMapActivity roadMap) {
+	private MapViewActivity mapView;
+
+	public CompassListener(SensorManager sensorManager, MapViewActivity mapView) {
 		this.sensorManager = sensorManager;
-		this.roadMap = roadMap;
+		this.mapView = mapView;
 	}
 
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -25,6 +23,7 @@ public class TiltListener implements SensorEventListener {
 
 	public void onSensorChanged(SensorEvent event) {
 		// Handle the events for which we registered
+		double azimut = 0;
 		switch (event.sensor.getType()) {
 		case Sensor.TYPE_ACCELEROMETER:
 			System.arraycopy(event.values, 0, mValuesAccel, 0, 3);
@@ -38,10 +37,21 @@ public class TiltListener implements SensorEventListener {
 				mValuesMagnet);
 		SensorManager.getOrientation(mRotationMatrix, mValuesOrientation);
 
-		if (Math.abs(mValuesOrientation[1]) < 0.5) {
-			roadMap.tilted(true);
-		} else {
-			roadMap.tilted(false);
+		// Lägg till kod här
+		float R[] = new float[9];
+		float I[] = new float[9];
+		boolean success = SensorManager.getRotationMatrix(R, I, mValuesAccel,
+				mValuesMagnet);
+		if (success) {
+			float orientation[] = new float[3];
+			SensorManager.getOrientation(R, orientation);
+			azimut = orientation[0] * 180.0 / Math.PI;
+			if (azimut < 0.0)
+				azimut += 360.0;
+			else if (azimut > 360.0)
+				azimut -= 360;
+			
+			mapView.setBearing(azimut);
 		}
 	};
 }
