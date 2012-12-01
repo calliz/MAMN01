@@ -85,17 +85,17 @@ public class MapViewRotationWithCompass extends MapActivity {
 		 if (savedInstanceState != null) {
 			 mModeCompass = savedInstanceState.getBoolean(SAVED_STATE_COMPASS_MODE, false); 
 		 }
-		 toogleRotateView(mModeCompass);
+		 
 	}
 
-//	public void onClick(View v) {
-//		switch (v.getId()) {
-//		case R.id.button_compass:
-//			//MyLocationOverlay.isCompassEnabled()
-//			toogleRotateView(mModeCompass);
-//			break;
-//		}
-//	}
+	public void onClick(View v) {
+		switch (v.getId()) {
+		case R.id.button_compass:
+			//MyLocationOverlay.isCompassEnabled()
+			toogleRotateView(mModeCompass);
+			break;
+		}
+	}
 	
 	/**
 	 * Since we only can have one instance of the Google APIs MapView, we
