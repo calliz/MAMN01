@@ -16,15 +16,17 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.google.android.maps.GeoPoint;
@@ -34,7 +36,8 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
 
-public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
+public class RoadMapActivity extends MapActivity implements Tiltable, Compass,
+		MyLocationUser {
 	private RoadOverlay roadOverlay;
 	private ArrayList<GeoPoint> all_geo_points;
 	private GeoPoint currentTarget;
@@ -104,9 +107,14 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 		final SensorEventListener mEventListener = new TiltListener(
 				sensorManager, this);
 		setListners(sensorManager, mEventListener);
-		final SensorEventListener mEventListener2 = new CompassListener(sensorManager, this);
+		final SensorEventListener mEventListener2 = new CompassListener(
+				sensorManager, this);
 		setListners(sensorManager, mEventListener2);
-		
+		LocationManager mlocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+		LocationListener mlocListener = new MyLocationListener(this);
+		mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,
+				mlocListener);
 	}
 
 	private void setListners(SensorManager sensorManager,
@@ -275,7 +283,6 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 			this.longi = longi;
 			this.overlay = overlay;
 		}
-		
 
 		public int getLongiE6() {
 			return (int) (longi * 1e6);
@@ -386,30 +393,37 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 	public void setBearing(double deg) {
 		double min_diff = Double.MAX_VALUE;
 		int min_index = -1;
-		if(isTilted){
-			
+		if (isTilted) {
+
 		}
-//		double diff = Math.abs(deg
-//					- CalcAngleFromNorth.calculateAngle(
-//							currentTarget.,
-//							all_geo_points.get(0).longi,
-//							all_geo_points.get(i).lat,
-//							all_geo_points.get(i).longi));
-//		if (diff < min_diff) {
-//				min_diff = diff;
-//				min_index = i;
-//			}
-//		}
-		
-//		Calculate angle between current location and next point. 
-//		If angle is small, vibrate or whatever.
-		Log.e("bearing","BEARING!!");
+		// double diff = Math.abs(deg
+		// - CalcAngleFromNorth.calculateAngle(
+		// currentTarget.,
+		// all_geo_points.get(0).longi,
+		// all_geo_points.get(i).lat,
+		// all_geo_points.get(i).longi));
+		// if (diff < min_diff) {
+		// min_diff = diff;
+		// min_index = i;
+		// }
+		// }
+
+		// Calculate angle between current location and next point.
+		// If angle is small, vibrate or whatever.
+		// Log.e("bearing","BEARING!!");
 	}
 
 	@Override
 	public void setTilted(boolean tilted) {
-			this.isTilted = tilted;
-			Log.e("Tilted","Tilting!");
+		this.isTilted = tilted;
+		// Log.e("Tilted","Tilting!");
+	}
+
+	@Override
+	public void setLocation(double lat, double longi, float accuracy) {
+		Log.e("location", "lat:" + lat + " long:" + longi + " accuracy:"
+				+ accuracy);
+		// TODO Auto-generated method stub
 	}
 
 }
