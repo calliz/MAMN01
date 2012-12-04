@@ -20,8 +20,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import android.content.Context;
 import android.hardware.SensorManager;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -82,7 +85,27 @@ public class MapViewActivity extends MapActivity {
 
 		GeoPoint moveTo = new GeoPoint(all_geo_points.get(0).getLatE6(),
 				all_geo_points.get(0).getLongiE6());
-		mc.animateTo(moveTo);// ska ha current location
+		
+		///////NEW
+		
+		LocationManager mlocManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+
+		LocationListener mlocListener = new MyLocationListener(this);
+
+
+		mlocManager.requestLocationUpdates( LocationManager.GPS_PROVIDER, 0, 0, mlocListener);
+		
+		
+		Location loc = mlocManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		if(loc == null){
+			Log.d("Provider", "null");
+			
+		}
+		GeoPoint cl = new GeoPoint((int) (loc.getLatitude()*1e6), (int) (loc.getLatitude()*1e6));
+		mc.animateTo(cl);
+	/////END NEW
+		
+		//mc.animateTo(moveTo);// ska ha current location
 		mc.setZoom(14);
 		// mapView.getOverlays().add(new RoadOverlay(all_geo_points));//For the
 		// next view
@@ -262,7 +285,7 @@ public class MapViewActivity extends MapActivity {
 																// GP(55.70462000000001,
 																// 13.191360));
 																// // Stora
-																// gråbrödersgatan
+																// grï¿½brï¿½dersgatan
 																// Lund
 		all_geo_points.add(new GP(55.714976, 13.212644)); // Designcentrum IKDC
 		all_geo_points.add(new GP(55.721056, 13.21277));
