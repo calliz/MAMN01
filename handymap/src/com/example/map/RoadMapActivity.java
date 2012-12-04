@@ -24,6 +24,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.google.android.maps.GeoPoint;
@@ -33,7 +34,7 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
 
-public class RoadMapActivity extends MapActivity {
+public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 	private RoadOverlay roadOverlay;
 	private ArrayList<GeoPoint> all_geo_points;
 	private GeoPoint currentTarget;
@@ -103,7 +104,9 @@ public class RoadMapActivity extends MapActivity {
 		final SensorEventListener mEventListener = new TiltListener(
 				sensorManager, this);
 		setListners(sensorManager, mEventListener);
-
+		final SensorEventListener mEventListener2 = new CompassListener(sensorManager, this);
+		setListners(sensorManager, mEventListener2);
+		
 	}
 
 	private void setListners(SensorManager sensorManager,
@@ -179,10 +182,6 @@ public class RoadMapActivity extends MapActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.activity_main, menu);
 		return true;
-	}
-
-	public void tilted(boolean isTilted) {
-		this.isTilted = isTilted;
 	}
 
 	public static ArrayList<GeoPoint> getDirections(double lat1, double lon1,
@@ -381,6 +380,36 @@ public class RoadMapActivity extends MapActivity {
 		mSensorManager.unregisterListener(mRotateView);
 		mMyLocationOverlay.disableMyLocation();
 		super.onStop();
+	}
+
+	@Override
+	public void setBearing(double deg) {
+		double min_diff = Double.MAX_VALUE;
+		int min_index = -1;
+		if(isTilted){
+			
+		}
+//		double diff = Math.abs(deg
+//					- CalcAngleFromNorth.calculateAngle(
+//							currentTarget.,
+//							all_geo_points.get(0).longi,
+//							all_geo_points.get(i).lat,
+//							all_geo_points.get(i).longi));
+//		if (diff < min_diff) {
+//				min_diff = diff;
+//				min_index = i;
+//			}
+//		}
+		
+//		Calculate angle between current location and next point. 
+//		If angle is small, vibrate or whatever.
+		Log.e("bearing","BEARING!!");
+	}
+
+	@Override
+	public void setTilted(boolean tilted) {
+			this.isTilted = tilted;
+			Log.e("Tilted","Tilting!");
 	}
 
 }

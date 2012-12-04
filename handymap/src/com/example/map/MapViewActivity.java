@@ -41,7 +41,7 @@ import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 
-public class MapViewActivity extends MapActivity {
+public class MapViewActivity extends MapActivity implements Compass{
 
 	private static final String SAVED_STATE_COMPASS_MODE = "com.touchboarder.example.modecompass";
 	@SuppressWarnings("unused")
@@ -277,46 +277,6 @@ public class MapViewActivity extends MapActivity {
 			}
 		}
 
-	}
-
-	public void setBearing(Double deg) {
-		double min_diff = Double.MAX_VALUE;
-		Toast toast = null;
-		int min_index = -1;
-		for (int i = 1; i < all_geo_points.size(); i++) {
-			double diff = Math.abs(deg
-					- CalcAngleFromNorth.calculateAngle(
-							all_geo_points.get(0).lat,
-							all_geo_points.get(0).longi,
-							all_geo_points.get(i).lat,
-							all_geo_points.get(i).longi));
-			if (diff < min_diff) {
-				min_diff = diff;
-				min_index = i;
-			}
-		}
-		if (min_diff < 10 && min_index != -1) {
-
-			Log.e("Found", "Pointing at lat:"
-					+ all_geo_points.get(min_index).lat + " longi:"
-					+ all_geo_points.get(min_index).longi);
-
-			if (selectedOverlay == null) {
-				GP active = all_geo_points.get(min_index);
-				selectedOverlay = new LocationOverlay(null, active.getLat(),
-						active.getLongi(), 400, Color.GREEN);
-				mapView.getOverlays().add(selectedOverlay);
-				selectedLocation = active;
-				toast = Toast.makeText(this,selectedLocation.getName(), 1);
-				toast.show();
-			}
-			// Vibrate for 300 milliseconds
-			//v.vibrate(50);
-		}else{
-			mapView.getOverlays().remove(selectedOverlay);
-			selectedOverlay = null;
-			selectedLocation = null;
-		}
 	}
 
 	private void addGeoPoints(ArrayList<GP> all_geo_points) {// 55.70462000000001,
@@ -566,6 +526,48 @@ public class MapViewActivity extends MapActivity {
 		public double getLat() {
 			return lat;
 		}
+	}
+
+	@Override
+	public void setBearing(double deg) {
+		double min_diff = Double.MAX_VALUE;
+		Toast toast = null;
+		int min_index = -1;
+		for (int i = 1; i < all_geo_points.size(); i++) {
+			double diff = Math.abs(deg
+					- CalcAngleFromNorth.calculateAngle(
+							all_geo_points.get(0).lat,
+							all_geo_points.get(0).longi,
+							all_geo_points.get(i).lat,
+							all_geo_points.get(i).longi));
+			if (diff < min_diff) {
+				min_diff = diff;
+				min_index = i;
+			}
+		}
+		if (min_diff < 10 && min_index != -1) {
+
+			Log.e("Found", "Pointing at lat:"
+					+ all_geo_points.get(min_index).lat + " longi:"
+					+ all_geo_points.get(min_index).longi);
+
+			if (selectedOverlay == null) {
+				GP active = all_geo_points.get(min_index);
+				selectedOverlay = new LocationOverlay(null, active.getLat(),
+						active.getLongi(), 400, Color.GREEN);
+				mapView.getOverlays().add(selectedOverlay);
+				selectedLocation = active;
+				toast = Toast.makeText(this,selectedLocation.getName(), 1);
+				toast.show();
+			}
+			// Vibrate for 300 milliseconds
+			//v.vibrate(50);
+		}else{
+			mapView.getOverlays().remove(selectedOverlay);
+			selectedOverlay = null;
+			selectedLocation = null;
+		}
+		
 	}
 
 }

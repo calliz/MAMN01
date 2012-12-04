@@ -13,11 +13,11 @@ public class TiltListener implements SensorEventListener {
 	private float[] mValuesOrientation = new float[3];
 	private float[] mRotationMatrix = new float[9];
 	private SensorManager sensorManager;
-	private RoadMapActivity roadMap;
+	private Tiltable tiltable;
 	
-	public TiltListener(SensorManager sensorManager, RoadMapActivity roadMap) {
+	public TiltListener(SensorManager sensorManager, Tiltable tiltable) {
 		this.sensorManager = sensorManager;
-		this.roadMap = roadMap;
+		this.tiltable = tiltable;
 	}
 
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -39,9 +39,9 @@ public class TiltListener implements SensorEventListener {
 		SensorManager.getOrientation(mRotationMatrix, mValuesOrientation);
 
 		if (Math.abs(mValuesOrientation[1]) < 0.5) {
-			roadMap.tilted(true);
+			tiltable.setTilted(true);
 		} else {
-			roadMap.tilted(false);
+			tiltable.setTilted(false);
 		}
 	};
 }

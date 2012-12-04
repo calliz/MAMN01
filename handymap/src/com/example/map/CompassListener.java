@@ -11,11 +11,11 @@ public class CompassListener implements SensorEventListener {
 	private float[] mValuesOrientation = new float[3];
 	private float[] mRotationMatrix = new float[9];
 	private SensorManager sensorManager;
-	private MapViewActivity mapView;
+	private Compass compass;
 
-	public CompassListener(SensorManager sensorManager, MapViewActivity mapView) {
+	public CompassListener(SensorManager sensorManager, Compass compass) {
 		this.sensorManager = sensorManager;
-		this.mapView = mapView;
+		this.compass = compass;
 	}
 
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -51,7 +51,7 @@ public class CompassListener implements SensorEventListener {
 			else if (azimut > 360.0)
 				azimut -= 360;
 			
-			mapView.setBearing(azimut);
+			compass.setBearing(azimut);
 		}
 	};
 }
