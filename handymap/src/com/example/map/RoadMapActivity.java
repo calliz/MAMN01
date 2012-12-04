@@ -276,7 +276,6 @@ public class RoadMapActivity extends MapActivity {
 			this.longi = longi;
 			this.overlay = overlay;
 		}
-		
 
 		public int getLongiE6() {
 			return (int) (longi * 1e6);

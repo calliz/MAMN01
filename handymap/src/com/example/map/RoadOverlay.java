@@ -13,72 +13,64 @@ import com.google.android.maps.Overlay;
 
 public class RoadOverlay extends Overlay {
 
-    private ArrayList all_geo_points;
+	private ArrayList all_geo_points;
 
+	public RoadOverlay(ArrayList allGeoPoints) {
 
-    public RoadOverlay(ArrayList allGeoPoints) {
+		super();
 
-        super();
+		this.all_geo_points = allGeoPoints;
 
-        this.all_geo_points = allGeoPoints;
+	}
 
-    }
+	@Override
+	public boolean draw(Canvas canvas, MapView mv, boolean shadow, long when) {
 
- 
+		super.draw(canvas, mv, shadow);
 
-    @Override
+		drawPath(mv, canvas);
+		return true;
 
-    public boolean draw(Canvas canvas, MapView mv, boolean shadow, long when) {
+	}
 
-        super.draw(canvas, mv, shadow);
+	public void drawPath(MapView mv, Canvas canvas) {
 
-        drawPath(mv, canvas);
-        return true;
+		int xPrev = -1, yPrev = -1, xNow = -1, yNow = -1;
 
-  }
+		Paint paint = new Paint();
 
- 
+		paint.setColor(Color.BLUE);
 
-    public void drawPath(MapView mv, Canvas canvas) {
+		paint.setStyle(Paint.Style.FILL_AND_STROKE);
 
-        int xPrev = -1, yPrev = -1, xNow = -1, yNow = -1;
+		paint.setStrokeWidth(4);
 
-        Paint paint = new Paint();
+		paint.setAlpha(100);
+		if (all_geo_points != null)
 
-        paint.setColor(Color.BLUE);
+			for (int i = 0; i < all_geo_points.size() - 4; i++) {
 
-        paint.setStyle(Paint.Style.FILL_AND_STROKE);
+				GeoPoint gp = (GeoPoint) all_geo_points.get(i);
 
-        paint.setStrokeWidth(4);
+				Point point = new Point();
 
-    paint.setAlpha(100);
-        if (all_geo_points != null)
+				mv.getProjection().toPixels(gp, point);
 
-            for (int i = 0; i < all_geo_points.size() - 4; i++) {
+				xNow = point.x;
 
-                GeoPoint gp = (GeoPoint) all_geo_points.get(i);
+				yNow = point.y;
 
-                Point point = new Point();
+				if (xPrev != -1) {
 
-                mv.getProjection().toPixels(gp, point);
+					canvas.drawLine(xPrev, yPrev, xNow, yNow, paint);
 
-                xNow = point.x;
+				}
 
-                yNow = point.y;
+				xPrev = xNow;
 
-                if (xPrev != -1) {
+				yPrev = yNow;
 
-                    canvas.drawLine(xPrev, yPrev, xNow, yNow, paint);
-
-                }
-
-                xPrev = xNow;
-
-                yPrev = yNow;
-
-            }
-    }
+			}
+	}
 
 }
-
-

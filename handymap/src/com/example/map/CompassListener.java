@@ -50,7 +50,7 @@ public class CompassListener implements SensorEventListener {
 				azimut += 360.0;
 			else if (azimut > 360.0)
 				azimut -= 360;
-			
+
 			mapView.setBearing(azimut);
 		}
 	};

@@ -20,14 +20,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import android.content.Context;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Vibrator;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -273,7 +271,7 @@ public class MapViewActivity extends MapActivity {
 			if (point != currentLocation) {
 				mapView.getOverlays().add(
 						new LocationOverlay(null, point.getLat(), point
-								.getLongi(), radius,Color.RED));
+								.getLongi(), radius, Color.RED));
 			}
 		}
 
@@ -307,12 +305,12 @@ public class MapViewActivity extends MapActivity {
 						active.getLongi(), 400, Color.GREEN);
 				mapView.getOverlays().add(selectedOverlay);
 				selectedLocation = active;
-				toast = Toast.makeText(this,selectedLocation.getName(), 1);
+				toast = Toast.makeText(this, selectedLocation.getName(), 1);
 				toast.show();
 			}
 			// Vibrate for 300 milliseconds
-			//v.vibrate(50);
-		}else{
+			// v.vibrate(50);
+		} else {
 			mapView.getOverlays().remove(selectedOverlay);
 			selectedOverlay = null;
 			selectedLocation = null;
@@ -327,13 +325,15 @@ public class MapViewActivity extends MapActivity {
 																// // Stora
 																// gr�br�dersgatan
 																// Lund
-		all_geo_points.add(new GP(55.714976, 13.212644, "Designcentrum (IKDC)")); // Designcentrum IKDC
-		all_geo_points.add(new GP(55.721056, 13.21277,"Magistratsvägen 57O"));
+		all_geo_points
+				.add(new GP(55.714976, 13.212644, "Designcentrum (IKDC)")); // Designcentrum
+																			// IKDC
+		all_geo_points.add(new GP(55.721056, 13.21277, "Magistratsvägen 57O"));
 		all_geo_points.add(new GP(55.709114, 13.167778, "Vildandsvägen 18H"));
 		all_geo_points.add(new GP(55.724313, 13.204009, "Fäladstorget 12"));
 		all_geo_points.add(new GP(55.698377, 13.216635, "Dalbyvägen 38"));
 		all_geo_points.add(new GP(55.705644, 13.186916, "Bangatan 1")); // Lunds
-															// centralstation
+		// centralstation
 		// all_geo_points.add(new GP(55.707095, 13.189404));// Close to
 		// epicentrum
 		// of Lund
@@ -547,10 +547,10 @@ public class MapViewActivity extends MapActivity {
 			this.locationName = locationName;
 		}
 
-		public CharSequence getName(){
+		public CharSequence getName() {
 			return locationName;
 		}
-		
+
 		public int getLongiE6() {
 			return (int) (longi * 1e6);
 		}
