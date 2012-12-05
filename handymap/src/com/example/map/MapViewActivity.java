@@ -587,9 +587,10 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 		if (selectedLocation != null) {
 			Log.i("MapViewActivity",
 					"selectedLocation: " + selectedLocation.getName());
-			Intent roadMapIntent = new Intent(MapViewActivity.this, RoadMapActivity.class);
-			roadMapIntent.putExtra()
-			
+			Intent roadMapIntent = new Intent(MapViewActivity.this,
+					RoadMapActivity.class);
+			roadMapIntent.putExtra("lat", selectedLocation.getLat());
+			roadMapIntent.putExtra("longi", selectedLocation.getLongi());
 		} else {
 			Log.i("MapViewActivity", "selectedLocation is NULL");
 		}
