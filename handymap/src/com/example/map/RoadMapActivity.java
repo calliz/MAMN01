@@ -134,6 +134,11 @@ public class RoadMapActivity extends MapActivity  implements Tiltable, Compass {
 		LocationManager mlocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
 	}
+	
+	public GeoPoint getTargetDestination(){
+		
+		return null;
+	}
 
 	private void setListners(SensorManager sensorManager,
 			SensorEventListener mEventListener) {
