@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -39,7 +40,7 @@ import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 
-public class MapViewActivity extends MapActivity implements Compass {
+public class MapViewActivity extends MapActivity implements Compass, Touch {
 
 	private static final String SAVED_STATE_COMPASS_MODE = "com.touchboarder.example.modecompass";
 	@SuppressWarnings("unused")
@@ -108,7 +109,13 @@ public class MapViewActivity extends MapActivity implements Compass {
 		final SensorEventListener mEventListener = new CompassListener(
 				sensorManager, this);
 		setListners(sensorManager, mEventListener);
+		final TouchListener touchListener = new TouchListener(this);
 
+		findViewById(R.id.mapview).setOnTouchListener(touchListener);
+
+		mMyLocationOverlay.isCompassEnabled();
+		toogleRotateView(mModeCompass);
+		mapView.setBuiltInZoomControls(false);
 	}
 
 	private void setListners(SensorManager sensorManager,
@@ -158,7 +165,7 @@ public class MapViewActivity extends MapActivity implements Compass {
 
 	/* HaptiMap function */
 	private void fetchAndSetCurrentPosition() {
-		// currentPos = myLocation.getCurrentLocation();
+		currentPos = myLocation.getCurrentLocation();
 		// Location tmpPos = myLocation.getCurrentLocation();
 
 		// Lund central
@@ -336,15 +343,6 @@ public class MapViewActivity extends MapActivity implements Compass {
 		return true;
 	}
 
-	public void onClick(View v) {
-		switch (v.getId()) {
-		case R.id.button_compass:
-			mMyLocationOverlay.isCompassEnabled();
-			toogleRotateView(mModeCompass);
-			break;
-		}
-	}
-
 	@SuppressWarnings("deprecation")
 	private void toogleRotateView(boolean compassMode) {
 		if (compassMode) {
@@ -372,9 +370,10 @@ public class MapViewActivity extends MapActivity implements Compass {
 	public void onResume() {
 		super.onResume();
 
-		toogleRotateView(!mModeCompass);
-		ToggleButton toggleCompassButton = (ToggleButton) findViewById(R.id.button_compass);
-		toggleCompassButton.setChecked(mModeCompass);
+		// toogleRotateView(!mModeCompass);
+		// ToggleButton toggleCompassButton = (ToggleButton)
+		// findViewById(R.id.button_compass);
+		// toggleCompassButton.setChecked(mModeCompass);
 
 		// shows the my location dot centered on your last known location
 		mMyLocationOverlay.enableMyLocation();
@@ -546,9 +545,9 @@ public class MapViewActivity extends MapActivity implements Compass {
 		}
 		if (min_diff < 10 && min_index != -1) {
 
-			Log.e("Found", "Pointing at lat:"
-					+ all_geo_points.get(min_index).lat + " longi:"
-					+ all_geo_points.get(min_index).longi);
+			// Log.e("Found", "Pointing at lat:"
+			// + all_geo_points.get(min_index).lat + " longi:"
+			// + all_geo_points.get(min_index).longi);
 
 			if (selectedOverlay == null) {
 				GP active = all_geo_points.get(min_index);
@@ -569,4 +568,12 @@ public class MapViewActivity extends MapActivity implements Compass {
 
 	}
 
+	public void touched() {
+		if (selectedLocation != null) {
+			Log.i("MapViewActivity",
+					"selectedLocation: " + selectedLocation.getName());
+		} else {
+			Log.i("MapViewActivity", "selectedLocation is NULL");
+		}
+	}
 }

@@ -108,8 +108,6 @@ public class RoadMapActivity extends MapActivity  implements Tiltable, Compass {
 		final SensorEventListener mEventListener2 = new CompassListener(
 				sensorManager, this);
 		setListners(sensorManager, mEventListener2);
-		LocationManager mlocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
 	}
 
 	private void setListners(SensorManager sensorManager,
