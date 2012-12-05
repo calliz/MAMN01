@@ -58,6 +58,7 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 	private RotateView mRotateView;
 	private GeoPoint userPoint;
 	private ArrayList<GP> all_geo_points;
+
 	/* HaptiMap attributes */
 	private MyLocationModule myLocation;
 	private Location currentPos;
@@ -69,7 +70,7 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 		super.onCreate(savedInstanceState);
 
 		/* HaptiMap code */
-		startHapticGuide();
+		// startHapticGuide();
 
 		setContentView(R.layout.map_view_activity);
 		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -126,8 +127,8 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 			}
 		});
 
-		mMyLocationOverlay.isCompassEnabled();
-		toogleRotateView(mModeCompass);
+//		mMyLocationOverlay.isCompassEnabled();
+//		toogleRotateView(mModeCompass);
 		nonPannableMapView.setBuiltInZoomControls(false);
 	}
 
@@ -182,7 +183,7 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 		// Location tmpPos = myLocation.getCurrentLocation();
 
 		// Lund central
-		currentPos = GeoToLocation(new GeoPoint(55705644, 13186916));
+		currentPos = geoToLocation(new GeoPoint(55705644, 13186916));
 
 		// currentPos.setLatitude(55.600459);
 		// currentPos.setLongitude(12.96725);
@@ -233,7 +234,7 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 	}
 
 	/* HaptiMap function */
-	private Location GeoToLocation(GeoPoint geoPoint) {
+	private Location geoToLocation(GeoPoint geoPoint) {
 		Location location = new Location("dummyProvider");
 		location.setLatitude(geoPoint.getLatitudeE6() / 1E6);
 		location.setLongitude(geoPoint.getLongitudeE6() / 1E6);
@@ -582,15 +583,20 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 	}
 
 	public void touched() {
-		Toast.makeText(MapViewActivity.this, "touched screen", //
-				Toast.LENGTH_SHORT).show();
+//		Toast.makeText(MapViewActivity.this, "touched screen", //
+//				Toast.LENGTH_SHORT).show();
 		if (selectedLocation != null) {
 			Log.i("MapViewActivity",
-					"selectedLocation: " + selectedLocation.getName());
+					"selectedLocation lat: " + selectedLocation.getLat()
+							+ "longi: " + selectedLocation.getLongi());
+			int lat = selectedLocation.getLatE6();
+			int longi = selectedLocation.getLongiE6();
+
 			Intent roadMapIntent = new Intent(MapViewActivity.this,
 					RoadMapActivity.class);
-			roadMapIntent.putExtra("lat", selectedLocation.getLat());
-			roadMapIntent.putExtra("longi", selectedLocation.getLongi());
+			roadMapIntent.putExtra("lat", lat);
+			roadMapIntent.putExtra("longi", longi);
+			startActivity(roadMapIntent);
 		} else {
 			Log.i("MapViewActivity", "selectedLocation is NULL");
 		}
