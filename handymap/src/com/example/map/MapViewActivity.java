@@ -44,19 +44,19 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 
 	private static final String SAVED_STATE_COMPASS_MODE = "com.touchboarder.example.modecompass";
 	@SuppressWarnings("unused")
-	private final String TAG = RoadMapActivity.class.getSimpleName();
+	private final String TAG = MapViewActivity.class.getSimpleName();
 	private NonPannableMapView nonPannableMapView;
 	private MapController mc;
 	private boolean mModeCompass = false;
 	private LocationOverlay selectedOverlay;
-	private GP selectedLocation;
+	private GeoPoint selectedLocation;
 
 	private MyLocationOverlay mMyLocationOverlay = null;
 	private SensorManager mSensorManager;
 	private LinearLayout mRotateViewContainer;
 	private RotateView mRotateView;
 	private GeoPoint userPoint;
-	private ArrayList<GP> all_geo_points;
+	private ArrayList<GeoPoint> all_geo_points;
 
 	/* HaptiMap attributes */
 	private MyLocationModule myLocation;
@@ -80,14 +80,14 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 		mMyLocationOverlay = new MyLocationOverlay(this, nonPannableMapView);
 		nonPannableMapView.getOverlays().add(mMyLocationOverlay);
 
-		mMyLocationOverlay.runOnFirstFix(new Runnable() {
-			public void run() {
-				nonPannableMapView.getController().animateTo(
-						userPoint = mMyLocationOverlay.getMyLocation());
-				// if(userPoint!=null)
-				// mc.animateTo(userPoint);
-			}
-		});
+		// mMyLocationOverlay.runOnFirstFix(new Runnable() {
+		// public void run() {
+		// nonPannableMapView.getController().animateTo(
+		// userPoint = mMyLocationOverlay.getMyLocation());
+		// // if(userPoint!=null)
+		// // mc.animateTo(userPoint);
+		// }
+		// });
 		// else mc.animateTo(userPoint);*/
 
 		nonPannableMapView.setBuiltInZoomControls(false);
@@ -95,7 +95,7 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 		mc = nonPannableMapView.getController();
 		// ArrayList<GeoPoint> all_geo_points = getDirections(55.70462000000001,
 		// 13.191360, 55.604640, 13.00382);
-		all_geo_points = new ArrayList<GP>();
+		all_geo_points = new ArrayList<GeoPoint>();
 		addGeoPoints(all_geo_points);
 
 		// GeoPoint moveTo = new GeoPoint(all_geo_points.get(0).getLatE6(),
@@ -193,6 +193,9 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 
 		// Lund central
 		currentPos = geoToLocation(new GeoPoint(55705644, 13186916));
+		userPoint = new GeoPoint(
+				convertToMicrodegrees1e6(currentPos.getLatitude()),
+				convertToMicrodegrees1e6(currentPos.getLongitude()));
 
 		// currentPos.setLatitude(55.600459);
 		// currentPos.setLongitude(12.96725);
@@ -218,6 +221,14 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 
 		}
 		// Log.i(TAG, "" + myLocation.getCurrentLocation());
+	}
+
+	private int convertToMicrodegrees1e6(double degrees) {
+		return (int) (degrees * 1e6);
+	}
+
+	private double convertToDegrees(int microdegrees) {
+		return (double) microdegrees / 1e6;
 	}
 
 	/* HaptiMap function */
@@ -252,11 +263,11 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 
 	public void blackBackround(MapView mapView, GeoPoint currentLocation) {
 		mapView.getOverlays().add(
-				new BlackOverlay(null, currentLocation.getLatitudeE6() / 1e6,
-						currentLocation.getLongitudeE6() / 1e6, 4000));
+				new BlackOverlay(null, convertToDegrees(currentLocation.getLatitudeE6()),
+						convertToDegrees(currentLocation.getLongitudeE6()), 4000));
 	}
 
-	public void addCircles(MapView mapView, ArrayList<GP> all_gp,
+	public void addCircles(MapView mapView, ArrayList<GeoPoint> all_gp,
 			int nbrOfCircles, GeoPoint currentLocation) {
 
 		int radius = getRadius(all_gp, currentLocation);
@@ -266,19 +277,18 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 		for (int i = 1; i <= nbrOfCircles; i++) {
 			mapView.getOverlays().add(
 					new CircleOverlay(null,
-							currentLocation.getLatitudeE6() / 1e6,
-							currentLocation.getLongitudeE6() / 1e6, step * i));
+							convertToDegrees(currentLocation.getLatitudeE6()),
+							convertToDegrees(currentLocation.getLongitudeE6()), step * i));
 		}
-
 	}
 
-	private int getRadius(ArrayList<GP> all_gp, GeoPoint currentLocation) {
+	private int getRadius(ArrayList<GeoPoint> all_gp, GeoPoint currentLocation) {
 
 		int longestDistance = 0;
 
-		for (GP item : all_gp) {
-			int lat = (int) item.getLat();
-			int lon = (int) item.getLongi();
+		for (GeoPoint item : all_gp) {
+			int lat = item.getLatitudeE6();
+			int lon = item.getLongitudeE6();
 
 			int thisDistance = (int) Math.sqrt(lat * lat + lon * lon);
 			if (thisDistance > longestDistance) {
@@ -291,46 +301,32 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 	}
 
 	private void addLocationMarkers(MapView mapView,
-			ArrayList<GP> all_geo_points) {
+			ArrayList<GeoPoint> all_geo_points) {
 		int radius = 200;
 		// GP currentLocation = all_geo_points.get(0);
 		// mapView.getOverlays().add(
 		// new CurrentPositionOverlay(null, currentLocation.getLat(),
 		// currentLocation.getLongi(), radius - 50));// currentposition
 
-		for (GP point : all_geo_points) {
+		for (GeoPoint point : all_geo_points) {
 			mapView.getOverlays().add(
-					new LocationOverlay(null, point.getLat(), point.getLongi(),
-							radius, Color.RED));
+					new LocationOverlay(null, convertToDegrees(point
+							.getLatitudeE6()), convertToDegrees(point
+							.getLongitudeE6()), radius, Color.RED));
 		}
 
 	}
 
-	private void addGeoPoints(ArrayList<GP> all_geo_points) {// 55.70462000000001,
-																// 13.191360
-																// all_geo_points.add(new
-																// GP(55.70462000000001,
-																// 13.191360));
-																// // Stora
-																// gr�br�dersgatan
-																// Lund
-																// all_geo_points
-		// .add(new GP(55.714976, 13.212644, "Designcentrum (IKDC)")); //
-		// Designcentrum
-		// // IKDC
-		all_geo_points.add(new GP(55.721056, 13.21277, "Magistratsvägen 57O"));
-		all_geo_points.add(new GP(55.709114, 13.167778, "Vildandsvägen 18H"));
-		all_geo_points.add(new GP(55.724313, 13.204009, "Fäladstorget 12"));
-		all_geo_points.add(new GP(55.698377, 13.216635, "Dalbyvägen 38"));
-		all_geo_points.add(new GP(55.705644, 13.186916, "Bangatan 1")); // Lunds
-		// centralstation
-		// all_geo_points.add(new GP(55.707095, 13.189404));// Close to
-		// epicentrum
-		// of Lund
+	private void addGeoPoints(ArrayList<GeoPoint> all_geo_points) {
+		all_geo_points.add(new GeoPoint(55721056, 1321277));
+		all_geo_points.add(new GeoPoint(55709114, 13167778));
+		all_geo_points.add(new GeoPoint(55724313, 13204009));
+		all_geo_points.add(new GeoPoint(55698377, 13216635));
+		all_geo_points.add(new GeoPoint(55705644, 13186916));
 	}
 
 	public void createRightZoomLevel(MapController mc,
-			ArrayList<GP> all_geo_points) {
+			ArrayList<GeoPoint> all_geo_points) {
 
 		int minLatitude = Integer.MAX_VALUE;
 		int maxLatitude = Integer.MIN_VALUE;
@@ -338,9 +334,9 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 		int maxLongitude = Integer.MIN_VALUE;
 
 		// Find the boundaries of the item set
-		for (GP item : all_geo_points) { // item Contain list of Geopints
-			int lat = item.getLatE6();
-			int lon = item.getLongiE6();
+		for (GeoPoint item : all_geo_points) { // item Contain list of Geopints
+			int lat = item.getLatitudeE6();
+			int lon = item.getLongitudeE6();
 
 			maxLatitude = Math.max(lat, maxLatitude);
 			minLatitude = Math.min(lat, minLatitude);
@@ -366,39 +362,9 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 		return true;
 	}
 
-	@SuppressWarnings("deprecation")
-	private void toogleRotateView(boolean compassMode) {
-		if (compassMode) {
-			mSensorManager.unregisterListener(mRotateView);
-			mRotateView.removeAllViews();
-			mRotateViewContainer.removeAllViews();
-			mRotateViewContainer.addView(nonPannableMapView);
-			mMyLocationOverlay.disableCompass();
-			mModeCompass = false;
-		} else {
-			mRotateViewContainer.removeAllViews();
-			mRotateView.removeAllViews();
-			mRotateView.addView(nonPannableMapView);
-			mRotateViewContainer.addView(mRotateView);
-			nonPannableMapView.setClickable(true);
-			mSensorManager.registerListener(mRotateView,
-					SensorManager.SENSOR_ORIENTATION,
-					SensorManager.SENSOR_DELAY_UI);
-			mMyLocationOverlay.enableCompass();
-			mModeCompass = true;
-		}
-	}
-
 	@Override
 	public void onResume() {
 		super.onResume();
-
-		// toogleRotateView(!mModeCompass);
-		// ToggleButton toggleCompassButton = (ToggleButton)
-		// findViewById(R.id.button_compass);
-		// toggleCompassButton.setChecked(mModeCompass);
-
-		// shows the my location dot centered on your last known location
 		mMyLocationOverlay.enableCompass();
 		mMyLocationOverlay.enableMyLocation();
 	}
@@ -508,37 +474,37 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 
 	}
 
-	private class GP {// possible extends GeoPoint
-		double lat;
-		double longi;
-		CharSequence locationName;
-
-		public GP(double lat, double longi, CharSequence locationName) {
-			this.lat = lat;
-			this.longi = longi;
-			this.locationName = locationName;
-		}
-
-		public CharSequence getName() {
-			return locationName;
-		}
-
-		public int getLongiE6() {
-			return (int) (longi * 1e6);
-		}
-
-		public int getLatE6() {
-			return (int) (lat * 1e6);
-		}
-
-		public double getLongi() {
-			return longi;
-		}
-
-		public double getLat() {
-			return lat;
-		}
-	}
+	// private class GP {// possible extends GeoPoint
+	// double lat;
+	// double longi;
+	// CharSequence locationName;
+	//
+	// public GP(double lat, double longi, CharSequence locationName) {
+	// this.lat = lat;
+	// this.longi = longi;
+	// this.locationName = locationName;
+	// }
+	//
+	// public CharSequence getName() {
+	// return locationName;
+	// }
+	//
+	// public int getLongiE6() {
+	// return (int) (longi * 1e6);
+	// }
+	//
+	// public int getLatE6() {
+	// return (int) (lat * 1e6);
+	// }
+	//
+	// public double getLongi() {
+	// return longi;
+	// }
+	//
+	// public double getLat() {
+	// return lat;
+	// }
+	// }
 
 	public void setBearing(double deg) {
 		double min_diff = Double.MAX_VALUE;
@@ -547,10 +513,12 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 		for (int i = 1; i < all_geo_points.size(); i++) {
 			double diff = Math.abs(deg
 					- CalcAngleFromNorth.calculateAngle(
-							all_geo_points.get(0).lat,
-							all_geo_points.get(0).longi,
-							all_geo_points.get(i).lat,
-							all_geo_points.get(i).longi));
+							convertToDegrees(userPoint.getLatitudeE6()),
+							convertToDegrees(userPoint.getLongitudeE6()),
+							convertToDegrees(all_geo_points.get(i)
+									.getLatitudeE6()),
+							convertToDegrees(all_geo_points.get(i)
+									.getLongitudeE6())));
 			if (diff < min_diff) {
 				min_diff = diff;
 				min_index = i;
@@ -563,9 +531,11 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 			// + all_geo_points.get(min_index).longi);
 
 			if (selectedOverlay == null) {
-				GP active = all_geo_points.get(min_index);
-				selectedOverlay = new LocationOverlay(null, active.getLat(),
-						active.getLongi(), 400, Color.GREEN);
+				GeoPoint active = all_geo_points.get(min_index);
+				selectedOverlay = new LocationOverlay(null,
+						convertToDegrees(active.getLatitudeE6()),
+						convertToDegrees(active.getLongitudeE6()), 400,
+						Color.GREEN);
 				nonPannableMapView.getOverlays().add(selectedOverlay);
 				selectedLocation = active;
 				// toast = Toast.makeText(this, selectedLocation.getName(), 1);
@@ -585,11 +555,11 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 		// Toast.makeText(MapViewActivity.this, "touched screen", //
 		// Toast.LENGTH_SHORT).show();
 		if (selectedLocation != null) {
-			Log.i("MapViewActivity",
-					"selectedLocation lat: " + selectedLocation.getLat()
-							+ "longi: " + selectedLocation.getLongi());
-			int lat = selectedLocation.getLatE6();
-			int longi = selectedLocation.getLongiE6();
+			Log.i("MapViewActivity", "selectedLocation lat: "
+					+ selectedLocation.getLatitudeE6() + "longi: "
+					+ selectedLocation.getLongitudeE6());
+			int lat = selectedLocation.getLatitudeE6();
+			int longi = selectedLocation.getLongitudeE6();
 
 			Intent roadMapIntent = new Intent(MapViewActivity.this,
 					RoadMapActivity.class);
