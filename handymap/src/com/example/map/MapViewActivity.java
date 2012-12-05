@@ -20,6 +20,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
@@ -28,10 +29,11 @@ import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
@@ -39,12 +41,12 @@ import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 
-public class MapViewActivity extends MapActivity implements Compass {
+public class MapViewActivity extends MapActivity implements Compass, Touch {
 
 	private static final String SAVED_STATE_COMPASS_MODE = "com.touchboarder.example.modecompass";
 	@SuppressWarnings("unused")
 	private final String TAG = RoadMapActivity.class.getSimpleName();
-	private MapView mapView;
+	private NonPannableMapView nonPannableMapView;
 	private MapController mc;
 	private boolean mModeCompass = false;
 	private LocationOverlay selectedOverlay;
@@ -74,13 +76,12 @@ public class MapViewActivity extends MapActivity implements Compass {
 		mRotateViewContainer = (LinearLayout) findViewById(R.id.rotating_view);
 		mRotateView = new RotateView(this);
 
-		mapView = (MapView) findViewById(R.id.mapview);
-		mMyLocationOverlay = new MyLocationOverlay(this, mapView);
+		nonPannableMapView = (NonPannableMapView) findViewById(R.id.mapview);
+		mMyLocationOverlay = new MyLocationOverlay(this, nonPannableMapView);
 
-		mapView.setBuiltInZoomControls(false);
+		nonPannableMapView.setBuiltInZoomControls(false);
 
-		mc = mapView.getController();
-
+		mc = nonPannableMapView.getController();
 		// ArrayList<GeoPoint> all_geo_points = getDirections(55.70462000000001,
 		// 13.191360, 55.604640, 13.00382);
 		all_geo_points = new ArrayList<GP>();
@@ -95,9 +96,10 @@ public class MapViewActivity extends MapActivity implements Compass {
 		// createRightZoomLevel(mc, all_geo_points);
 		int nbrOfCircles = 3;
 		GP currentLocation = all_geo_points.get(0);
-		blackBackround(mapView, currentLocation);
-		addCircles(mapView, all_geo_points, nbrOfCircles, currentLocation);
-		addLocationMarkers(mapView, all_geo_points);
+		blackBackround(nonPannableMapView, currentLocation);
+		addCircles(nonPannableMapView, all_geo_points, nbrOfCircles,
+				currentLocation);
+		addLocationMarkers(nonPannableMapView, all_geo_points);
 		// mc.animateTo(new GeoPoint(latitudeE6, longitudeE6));
 
 		if (savedInstanceState != null) {
@@ -109,7 +111,24 @@ public class MapViewActivity extends MapActivity implements Compass {
 		final SensorEventListener mEventListener = new CompassListener(
 				sensorManager, this);
 		setListners(sensorManager, mEventListener);
+		final TouchListener touchListener = new TouchListener(this);
 
+		// mapView.setOnTouchListener(touchListener);
+
+		nonPannableMapView.setOnTouchListener(new OnTouchListener() {
+
+			public boolean onTouch(View v, MotionEvent event) {
+				if (event.getAction() == MotionEvent.ACTION_UP) {
+					touched();
+					return true;
+				}
+				return false;
+			}
+		});
+
+		mMyLocationOverlay.isCompassEnabled();
+		toogleRotateView(mModeCompass);
+		nonPannableMapView.setBuiltInZoomControls(false);
 	}
 
 	private void setListners(SensorManager sensorManager,
@@ -159,7 +178,7 @@ public class MapViewActivity extends MapActivity implements Compass {
 
 	/* HaptiMap function */
 	private void fetchAndSetCurrentPosition() {
-		// currentPos = myLocation.getCurrentLocation();
+		currentPos = myLocation.getCurrentLocation();
 		// Location tmpPos = myLocation.getCurrentLocation();
 
 		// Lund central
@@ -169,11 +188,11 @@ public class MapViewActivity extends MapActivity implements Compass {
 		// currentPos.setLongitude(12.96725);
 
 		if (myLocation.getCurrentLocation() == null) {
-			Toast.makeText(
-					MapViewActivity.this,
-					"No GPS signal - using Designcentrum IKDC fixed position instead",
-					Toast.LENGTH_SHORT).show();
-			Log.i(TAG, "No GPS signal - no current position set");
+			// Toast.makeText(
+			// MapViewActivity.this,
+			// "No GPS signal - using Designcentrum IKDC fixed position instead",
+			// Toast.LENGTH_SHORT).show();
+			// Log.i(TAG, "No GPS signal - no current position set");
 
 		} else {
 			// Toast.makeText(
@@ -183,9 +202,9 @@ public class MapViewActivity extends MapActivity implements Compass {
 			// Toast.LENGTH_SHORT).show();
 			// Log.i(TAG, "Current location set to: " + currentPos.getLatitude()
 			// + ", " + currentPos.getLongitude());
-			Toast.makeText(MapViewActivity.this,
-					"GPS signal is good - current position is set",
-					Toast.LENGTH_SHORT).show();
+			// Toast.makeText(MapViewActivity.this,
+			// "GPS signal is good - current position is set",
+			// Toast.LENGTH_SHORT).show();
 
 		}
 		// Log.i(TAG, "" + myLocation.getCurrentLocation());
@@ -337,30 +356,21 @@ public class MapViewActivity extends MapActivity implements Compass {
 		return true;
 	}
 
-	public void onClick(View v) {
-		switch (v.getId()) {
-		case R.id.button_compass:
-			mMyLocationOverlay.isCompassEnabled();
-			toogleRotateView(mModeCompass);
-			break;
-		}
-	}
-
 	@SuppressWarnings("deprecation")
 	private void toogleRotateView(boolean compassMode) {
 		if (compassMode) {
 			mSensorManager.unregisterListener(mRotateView);
 			mRotateView.removeAllViews();
 			mRotateViewContainer.removeAllViews();
-			mRotateViewContainer.addView(mapView);
+			mRotateViewContainer.addView(nonPannableMapView);
 			mMyLocationOverlay.disableCompass();
 			mModeCompass = false;
 		} else {
 			mRotateViewContainer.removeAllViews();
 			mRotateView.removeAllViews();
-			mRotateView.addView(mapView);
+			mRotateView.addView(nonPannableMapView);
 			mRotateViewContainer.addView(mRotateView);
-			mapView.setClickable(true);
+			nonPannableMapView.setClickable(true);
 			mSensorManager.registerListener(mRotateView,
 					SensorManager.SENSOR_ORIENTATION,
 					SensorManager.SENSOR_DELAY_UI);
@@ -373,9 +383,10 @@ public class MapViewActivity extends MapActivity implements Compass {
 	public void onResume() {
 		super.onResume();
 
-		toogleRotateView(!mModeCompass);
-		ToggleButton toggleCompassButton = (ToggleButton) findViewById(R.id.button_compass);
-		toggleCompassButton.setChecked(mModeCompass);
+		// toogleRotateView(!mModeCompass);
+		// ToggleButton toggleCompassButton = (ToggleButton)
+		// findViewById(R.id.button_compass);
+		// toggleCompassButton.setChecked(mModeCompass);
 
 		// shows the my location dot centered on your last known location
 		mMyLocationOverlay.enableMyLocation();
@@ -547,27 +558,41 @@ public class MapViewActivity extends MapActivity implements Compass {
 		}
 		if (min_diff < 10 && min_index != -1) {
 
-			Log.e("Found", "Pointing at lat:"
-					+ all_geo_points.get(min_index).lat + " longi:"
-					+ all_geo_points.get(min_index).longi);
+			// Log.e("Found", "Pointing at lat:"
+			// + all_geo_points.get(min_index).lat + " longi:"
+			// + all_geo_points.get(min_index).longi);
 
 			if (selectedOverlay == null) {
 				GP active = all_geo_points.get(min_index);
 				selectedOverlay = new LocationOverlay(null, active.getLat(),
 						active.getLongi(), 400, Color.GREEN);
-				mapView.getOverlays().add(selectedOverlay);
+				nonPannableMapView.getOverlays().add(selectedOverlay);
 				selectedLocation = active;
-				toast = Toast.makeText(this, selectedLocation.getName(), 1);
-				toast.show();
+				// toast = Toast.makeText(this, selectedLocation.getName(), 1);
+				// toast.show();
 			}
 			// Vibrate for 300 milliseconds
 			// v.vibrate(50);
 		} else {
-			mapView.getOverlays().remove(selectedOverlay);
+			nonPannableMapView.getOverlays().remove(selectedOverlay);
 			selectedOverlay = null;
 			selectedLocation = null;
 		}
 
 	}
 
+	public void touched() {
+		Toast.makeText(MapViewActivity.this, "touched screen", //
+				Toast.LENGTH_SHORT).show();
+		if (selectedLocation != null) {
+			Log.i("MapViewActivity",
+					"selectedLocation: " + selectedLocation.getName());
+			Intent roadMapIntent = new Intent(MapViewActivity.this,
+					RoadMapActivity.class);
+			roadMapIntent.putExtra("lat", selectedLocation.getLat());
+			roadMapIntent.putExtra("longi", selectedLocation.getLongi());
+		} else {
+			Log.i("MapViewActivity", "selectedLocation is NULL");
+		}
+	}
 }
