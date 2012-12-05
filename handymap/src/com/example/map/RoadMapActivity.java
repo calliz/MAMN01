@@ -85,6 +85,17 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 		int maxZoom = mapView.getMaxZoomLevel();
 		int initZoom = (int) (0.8 * (double) maxZoom);
 
+		mMyLocationOverlay.runOnFirstFix(new Runnable() {
+			public void run() {
+				mapView.getController().animateTo(
+						mMyLocationOverlay.getMyLocation());
+				// userPoint = mMyLocationOverlay.getMyLocation();
+				// if(userPoint!=null)
+				// mc.animateTo(userPoint);
+			}
+		});
+		// else mc.animateTo(userPoint);
+
 		mc = mapView.getController();
 		mc.setZoom(initZoom);
 
@@ -408,28 +419,20 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 	public void onResume() {
 		super.onResume();
 
-		toogleRotateView(!mModeCompass);
-		ToggleButton toggleCompassButton = (ToggleButton) findViewById(R.id.button_compass);
-		toggleCompassButton.setChecked(mModeCompass);
+//		toogleRotateView(!mModeCompass);
+//		ToggleButton toggleCompassButton = (ToggleButton) findViewById(R.id.button_compass);
+//		toggleCompassButton.setChecked(mModeCompass);
 
 		// shows the my location dot centered on your last known location
+		mMyLocationOverlay.enableCompass();
 		mMyLocationOverlay.enableMyLocation();
-		if (userPoint == null)
-			mMyLocationOverlay.runOnFirstFix(new Runnable() {
-				public void run() {
-					userPoint = mMyLocationOverlay.getMyLocation();
-					// if(userPoint!=null)
-					// mc.animateTo(userPoint);
-
-				}
-			});
-		// else mc.animateTo(userPoint);
 	}
 
 	@Override
 	public void onPause() {
 		super.onPause();
 		mMyLocationOverlay.disableCompass();
+		mMyLocationOverlay.disableMyLocation();
 	}
 
 	// Called during the activity life cycle,
@@ -446,7 +449,6 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 	@Override
 	protected void onStop() {
 		mSensorManager.unregisterListener(mRotateView);
-		mMyLocationOverlay.disableMyLocation();
 		super.onStop();
 	}
 
