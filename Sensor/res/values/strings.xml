@@ -1,9 +1,0 @@
-<resources>
-
-    <string name="app_name">Sensor</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="menu_settings">Settings</string>
-    <string name="title_activity_sensor_test">SensorTestActivity</string>
-    <string name="shake_to_get_a_toast_and_to_switch_color">Shake to get a toast and to switch color</string>
-
-</resources>

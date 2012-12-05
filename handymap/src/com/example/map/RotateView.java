@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package com.example.map;
 
 import javax.microedition.khronos.opengles.GL;
@@ -36,13 +35,14 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
-
 /**
- * The RotateView class is created from two inner class of MapViewCompassDemo.java found at: 
- * ..\Android\Android SDK Tools\add-ons\addon-google_apis-google-#\samples\MapsDemo\src\com\example\android\apis\view\
+ * The RotateView class is created from two inner class of
+ * MapViewCompassDemo.java found at: ..\Android\Android SDK
+ * Tools\add-ons\addon-google_apis
+ * -google-#\samples\MapsDemo\src\com\example\android\apis\view\
  * 
  * @author hsigmond - touchboarder.com -
- *
+ * 
  */
 
 @SuppressWarnings("deprecation")

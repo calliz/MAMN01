@@ -121,6 +121,14 @@ public class RoadMapActivity extends MapActivity  implements Tiltable, Compass {
 				sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
 				SensorManager.SENSOR_DELAY_NORMAL);
 	}
+	
+	public GeoPoint getCurrentPos(){//Måste implementeras
+		return null;
+	}
+	
+	public void setNextNode(GeoPoint newPoint){//Måste implementeras
+		
+	}
 
 	public boolean pointReached() {// returns true if finaldestination reached.
 
@@ -129,7 +137,19 @@ public class RoadMapActivity extends MapActivity  implements Tiltable, Compass {
 
 		all_geo_points.remove(0);
 		currentTarget = all_geo_points.get(0);
-
+		setNextNode(currentTarget);
+		
+		GeoPoint currPos = null;//här gettas current position
+		all_geo_points.add(0, currPos);//lägg till current position för uppritning, tas bort sen.
+		
+		
+		mapView.getOverlays().remove(roadOverlay);
+		roadOverlay = new RoadOverlay(all_geo_points);
+		all_geo_points.remove(0);//för att hålla listan i ok state
+		mapView.getOverlays().add(roadOverlay);
+		
+		
+		
 		return false;
 
 	}
@@ -137,17 +157,6 @@ public class RoadMapActivity extends MapActivity  implements Tiltable, Compass {
 	public void setNewRoad(RoadOverlay newOverlay) {
 		mapView.getOverlays().remove(roadOverlay);
 		mapView.getOverlays().add(newOverlay);
-	}
-
-	private void addGeoPoints(ArrayList<GP> all_geo_points) {// 55.70462000000001,
-																// 13.191360
-		all_geo_points.add(new GP(55.70462000000001, 13.191360));
-		all_geo_points.add(new GP(55.721056, 13.21277));
-		all_geo_points.add(new GP(55.709114, 13.167778));
-		all_geo_points.add(new GP(55.724313, 13.204009));
-		all_geo_points.add(new GP(55.698377, 13.216635));
-		all_geo_points.add(new GP(55.707095, 13.189404));// Close to epicentrum
-															// of Lund
 	}
 
 	public void createRightZoomLevel(MapController mc,
