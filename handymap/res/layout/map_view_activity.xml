@@ -14,7 +14,7 @@
         android:clickable="false"
         android:focusable="false" >
 
-        <com.google.android.maps.MapView
+        <com.example.map.NonPannableMapView
             android:id="@+id/mapview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
