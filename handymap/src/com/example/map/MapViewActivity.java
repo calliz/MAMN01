@@ -80,6 +80,7 @@ public class MapViewActivity extends MapActivity implements Compass {
 		mapView.setBuiltInZoomControls(false);
 
 		mc = mapView.getController();
+
 		// ArrayList<GeoPoint> all_geo_points = getDirections(55.70462000000001,
 		// 13.191360, 55.604640, 13.00382);
 		all_geo_points = new ArrayList<GP>();
