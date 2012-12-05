@@ -20,7 +20,6 @@ import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -36,8 +35,7 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
 
-public class RoadMapActivity extends MapActivity implements Tiltable, Compass,
-		MyLocationUser {
+public class RoadMapActivity extends MapActivity  implements Tiltable, Compass {
 	private RoadOverlay roadOverlay;
 	private ArrayList<GeoPoint> all_geo_points;
 	private GeoPoint currentTarget;
@@ -112,9 +110,6 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass,
 		setListners(sensorManager, mEventListener2);
 		LocationManager mlocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-		LocationListener mlocListener = new MyLocationListener(this);
-		mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,
-				mlocListener);
 	}
 
 	private void setListners(SensorManager sensorManager,
@@ -389,7 +384,6 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass,
 		super.onStop();
 	}
 
-	@Override
 	public void setBearing(double deg) {
 		double min_diff = Double.MAX_VALUE;
 		int min_index = -1;
@@ -410,20 +404,13 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass,
 
 		// Calculate angle between current location and next point.
 		// If angle is small, vibrate or whatever.
-		// Log.e("bearing","BEARING!!");
+		// Log.e("bearing","BEARING!!");		
 	}
 
-	@Override
-	public void setTilted(boolean tilted) {
-		this.isTilted = tilted;
-		// Log.e("Tilted","Tilting!");
+	public void setTilted(boolean b) {
+		this.isTilted = b;
+		// Log.e("Tilted","Tilting!");		
 	}
-
-	@Override
-	public void setLocation(double lat, double longi, float accuracy) {
-		Log.e("location", "lat:" + lat + " long:" + longi + " accuracy:"
-				+ accuracy);
-		// TODO Auto-generated method stub
-	}
+	
 
 }
