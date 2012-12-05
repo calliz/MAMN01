@@ -1,6 +1,7 @@
 package com.example.map;
 
 import java.io.InputStream;
+
 import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -38,6 +39,11 @@ import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
+
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 
 public class MapViewActivity extends MapActivity {
 
@@ -88,6 +94,25 @@ public class MapViewActivity extends MapActivity {
 		
 		///////NEW
 		
+		LocationManager locationManager =
+		        (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		LocationManagerHelper lmh = new LocationManagerHelper();
+
+		String mlocProvider;
+		Criteria hdCrit = new Criteria();
+
+		hdCrit.setAccuracy(Criteria.ACCURACY_FINE);
+
+		mlocProvider = locationManager.getBestProvider(hdCrit, true);
+
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 1000, lmh);
+		Location currentLocation = locationManager.getLastKnownLocation(mlocProvider);
+		//locationManager.removeUpdates(lmh);
+
+		double currentLatitude = currentLocation.getLatitude();
+		double currentLongitude = currentLocation.getLongitude();
+		Log.d("Current pos = ", "Lat: " + currentLatitude + " and Longi: " + currentLongitude);
+		/*
 		LocationManager mlocManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
 
 		LocationListener mlocListener = new MyLocationListener(this);
@@ -102,7 +127,7 @@ public class MapViewActivity extends MapActivity {
 			
 		}
 		GeoPoint cl = new GeoPoint((int) (loc.getLatitude()*1e6), (int) (loc.getLatitude()*1e6));
-		mc.animateTo(cl);
+		mc.animateTo(cl);*/
 	/////END NEW
 		
 		//mc.animateTo(moveTo);// ska ha current location
@@ -111,9 +136,9 @@ public class MapViewActivity extends MapActivity {
 		// next view
 		// createRightZoomLevel(mc, all_geo_points);
 		int nbrOfCircles = 3;
-		GP currentLocation = all_geo_points.get(0);
-		blackBackround(mapView, currentLocation);
-		addCircles(mapView, all_geo_points, nbrOfCircles, currentLocation);
+		GP currentLocation1 = all_geo_points.get(0);
+		blackBackround(mapView, currentLocation1);
+		addCircles(mapView, all_geo_points, nbrOfCircles, currentLocation1);
 		addLocationMarkers(mapView, all_geo_points);
 		// mc.animateTo(new GeoPoint(latitudeE6, longitudeE6));
 
@@ -121,6 +146,40 @@ public class MapViewActivity extends MapActivity {
 			mModeCompass = savedInstanceState.getBoolean(
 					SAVED_STATE_COMPASS_MODE, false);
 		}
+	}
+	
+	public static class LocationManagerHelper implements LocationListener {
+
+	    private static double latitude;
+	    private static double longitude;
+
+	    @Override
+	    public void onLocationChanged(Location loc) {
+	        latitude = loc.getLatitude();
+	        longitude = loc.getLongitude();
+	        Log.i("MyLocation",Double.toString(latitude)+" "+Double.toString(longitude));
+	    }
+
+	    @Override
+	    public void onProviderDisabled(String provider) { }
+
+	    @Override
+	    public void onProviderEnabled(String provider) { }
+
+	    @Override
+	    public void onStatusChanged(String provider, int status, Bundle extras) {
+	        // TODO Auto-generated method stub
+
+	    }
+
+	    public static double getLatitude() {
+	        return latitude;
+	    }
+
+	    public static double getLongitude() {
+	        return longitude;
+	    }
+
 	}
 
 	/* HaptiMap function */
