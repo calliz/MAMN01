@@ -13,19 +13,22 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.haptimap.hcimodules.guiding.HapticGuide;
-import org.haptimap.hcimodules.guiding.HapticGuideEventListener;
 import org.haptimap.hcimodules.util.MyLocationModule;
 import org.haptimap.hcimodules.util.WayPoint;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -41,7 +44,8 @@ import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 
-public class MapViewActivity extends MapActivity implements Compass, Touch {
+public class MapViewActivity extends MapActivity implements Compass, Touch,
+		LocationListener {
 
 	private static final String SAVED_STATE_COMPASS_MODE = "com.touchboarder.example.modecompass";
 	@SuppressWarnings("unused")
@@ -50,84 +54,104 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 	private MapController mc;
 	private boolean mModeCompass = false;
 	private LocationOverlay selectedOverlay;
-	private GP selectedLocation;
+	private GeoPoint selectedLocation;
 
 	private MyLocationOverlay mMyLocationOverlay = null;
 	private SensorManager mSensorManager;
 	private LinearLayout mRotateViewContainer;
 	private RotateView mRotateView;
+	private GeoPoint userPoint;
+	private ArrayList<GeoPoint> all_geo_points;
 
-	private ArrayList<GP> all_geo_points;
 	/* HaptiMap attributes */
 	private MyLocationModule myLocation;
 	private Location currentPos;
 	private Location nextPos;
-	private GeoPoint userPointInt;
-	private GP userPointDouble;
 	private HapticGuide theGuide;
+	private LocationManager locationManager;
+	private String provider;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		/* HaptiMap code */
-		startHapticGuide();
+		// startHapticGuide();
 
-		setContentView(R.layout.map_view_activity);
-		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-		mRotateViewContainer = (LinearLayout) findViewById(R.id.rotating_view);
-		mRotateView = new RotateView(this);
+		// Get the location manager
+		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		// Define the criteria how to select the locatioin provider -> use
+		// default
+		Criteria criteria = new Criteria();
+		provider = locationManager.getBestProvider(criteria, false);
+		Location location = locationManager.getLastKnownLocation(provider);
 
-		nonPannableMapView = (NonPannableMapView) findViewById(R.id.mapview);
-		mMyLocationOverlay = new MyLocationOverlay(this, nonPannableMapView);
+		// Initialize the location fields
+		if (location != null) {
+			System.out.println("Provider " + provider + " has been selected.");
+			onLocationChanged(location);
+			
+			setContentView(R.layout.map_view_activity);
+			mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+			mRotateViewContainer = (LinearLayout) findViewById(R.id.rotating_view);
+			mRotateView = new RotateView(this);
 
-		nonPannableMapView.setBuiltInZoomControls(false);
+			nonPannableMapView = (NonPannableMapView) findViewById(R.id.mapview);
+			mMyLocationOverlay = new MyLocationOverlay(this, nonPannableMapView);
 
-		mc = nonPannableMapView.getController();
-		// ArrayList<GeoPoint> all_geo_points = getDirections(55.70462000000001,
-		// 13.191360, 55.604640, 13.00382);
-		all_geo_points = new ArrayList<GP>();
-		addGeoPoints(all_geo_points);
+			nonPannableMapView.setBuiltInZoomControls(false);
 
-		mc.animateTo(userPointInt);// ska ha current location
-		mc.setZoom(14);
-		// mapView.getOverlays().add(new RoadOverlay(all_geo_points));//For the
-		// next view
-		// createRightZoomLevel(mc, all_geo_points);
-		int nbrOfCircles = 3;
-		blackBackround(nonPannableMapView, userPointDouble);
-		addCircles(nonPannableMapView, all_geo_points, nbrOfCircles,
-				userPointDouble);
-		addLocationMarkers(nonPannableMapView, all_geo_points);
-		// mc.animateTo(new GeoPoint(latitudeE6, longitudeE6));
+			mc = nonPannableMapView.getController();
+			// ArrayList<GeoPoint> all_geo_points = getDirections(55.70462000000001,
+			// 13.191360, 55.604640, 13.00382);
+			all_geo_points = new ArrayList<GeoPoint>();
+			addGeoPoints(all_geo_points);
 
-		if (savedInstanceState != null) {
-			mModeCompass = savedInstanceState.getBoolean(
-					SAVED_STATE_COMPASS_MODE, false);
-		}
-		SensorManager sensorManager = (SensorManager) this
-				.getSystemService(SENSOR_SERVICE);
-		final SensorEventListener mEventListener = new CompassListener(
-				sensorManager, this);
-		setListners(sensorManager, mEventListener);
-		final TouchListener touchListener = new TouchListener(this);
+			mc.animateTo(userPoint);// ska ha current location
+			mc.setZoom(14);
+			// mapView.getOverlays().add(new RoadOverlay(all_geo_points));//For the
+			// next view
+			// createRightZoomLevel(mc, all_geo_points);
+			int nbrOfCircles = 3;
+			blackBackround(nonPannableMapView, userPoint);
+			addCircles(nonPannableMapView, all_geo_points, nbrOfCircles, userPoint);
+			addLocationMarkers(nonPannableMapView, all_geo_points);
+			// mc.animateTo(new GeoPoint(latitudeE6, longitudeE6));
 
-		// mapView.setOnTouchListener(touchListener);
-
-		nonPannableMapView.setOnTouchListener(new OnTouchListener() {
-
-			public boolean onTouch(View v, MotionEvent event) {
-				if (event.getAction() == MotionEvent.ACTION_UP) {
-					touched();
-					return true;
-				}
-				return false;
+			if (savedInstanceState != null) {
+				mModeCompass = savedInstanceState.getBoolean(
+						SAVED_STATE_COMPASS_MODE, false);
 			}
-		});
+			SensorManager sensorManager = (SensorManager) this
+					.getSystemService(SENSOR_SERVICE);
+			final SensorEventListener mEventListener = new CompassListener(
+					sensorManager, this);
+			setListners(sensorManager, mEventListener);
+			final TouchListener touchListener = new TouchListener(this);
 
-		mMyLocationOverlay.isCompassEnabled();
-		toogleRotateView(mModeCompass);
-		nonPannableMapView.setBuiltInZoomControls(false);
+			// mapView.setOnTouchListener(touchListener);
+
+			nonPannableMapView.setOnTouchListener(new OnTouchListener() {
+
+				public boolean onTouch(View v, MotionEvent event) {
+					if (event.getAction() == MotionEvent.ACTION_UP) {
+						touched();
+						return true;
+					}
+					return false;
+				}
+			});
+
+			mMyLocationOverlay.isCompassEnabled();
+			toogleRotateView(mModeCompass);
+			nonPannableMapView.setBuiltInZoomControls(false);
+		} else {
+			Toast.makeText(this, "No GPS signal - restart application ",
+					Toast.LENGTH_SHORT).show();
+			this.finish();
+		}
+
+		
 	}
 
 	private void setListners(SensorManager sensorManager,
@@ -152,61 +176,67 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 
 		theGuide = new HapticGuide(this);
 
-		fetchAndSetCurrentPosition();
+		while (!fetchAndSetCurrentPosition())
+			;
 
-		guideToSavedPosition();
+		// guideToSavedPosition();
 
-		theGuide.registerHapticGuideEventListener(new HapticGuideEventListener() {
-
-			public void onRateIntervalChanged(int millis) {
-
-			}
-
-			public void onPrepared(boolean onPrepared) {
-
-			}
-
-			public void onDestinationReached(long[] pattern) { //
-				// Toast.makeText(GuidingService.this, "You have arrived!", //
-				// Toast.LENGTH_SHORT).show();
-				Log.i(TAG, "You have arrived at your final destination!!!");
-			}
-		});
+		// theGuide.registerHapticGuideEventListener(new
+		// HapticGuideEventListener() {
+		//
+		// public void onRateIntervalChanged(int millis) {
+		//
+		// }
+		//
+		// public void onPrepared(boolean onPrepared) {
+		//
+		// }
+		//
+		// public void onDestinationReached(long[] pattern) { //
+		// // Toast.makeText(GuidingService.this, "You have arrived!", //
+		// // Toast.LENGTH_SHORT).show();
+		// Log.i(TAG, "You have arrived at your final destination!!!");
+		// }
+		// });
 
 	}
 
 	/* HaptiMap function */
-	private void fetchAndSetCurrentPosition() {
+	private boolean fetchAndSetCurrentPosition() {
 		currentPos = myLocation.getCurrentLocation();
 
-		// IKDC 55.714928,13.212816
-		currentPos = geoToLocation(new GeoPoint(55714928, 13212816));
-		userPointDouble = new GP(currentPos.getLatitude(),
-				currentPos.getLongitude(), "Current pos");
-		userPointInt = new GeoPoint((int) (currentPos.getLatitude() * 1e6),
-				(int) (currentPos.getLongitude() * 1e6));
+		// IKDC 55.714928,13.212816 JAJJAJA
+		// currentPos = geoToLocation(new GeoPoint(55714928, 13212816));
 
 		if (currentPos == null) {
-			// Toast.makeText(
-			// MapViewActivity.this,
-			// "No GPS signal - using Designcentrum IKDC fixed position instead",
-			// Toast.LENGTH_SHORT).show();
+			Toast.makeText(MapViewActivity.this, "No GPS signal - waiting",
+					Toast.LENGTH_SHORT).show();
 			// Log.i(TAG, "No GPS signal - no current position set");
-
+			return false;
 		} else {
-			// Toast.makeText(
-			// MapViewActivity.this,
-			// "Current location set to: " + currentPos.getLatitude()
-			// + ", " + currentPos.getLongitude(),
-			// Toast.LENGTH_SHORT).show();
+			userPoint = new GeoPoint(convertGeoToInt(currentPos.getLatitude()),
+					convertGeoToInt(currentPos.getLongitude()));
+			Toast.makeText(
+					MapViewActivity.this,
+					"Current location set to: " + currentPos.getLatitude()
+							+ ", " + currentPos.getLongitude(),
+					Toast.LENGTH_SHORT).show();
 			// Log.i(TAG, "Current location set to: " + currentPos.getLatitude()
 			// + ", " + currentPos.getLongitude());
 			// Toast.makeText(MapViewActivity.this,
 			// "GPS signal is good - current position is set",
 			// Toast.LENGTH_SHORT).show();
-
+			return true;
 		}
 		// Log.i(TAG, "" + myLocation.getCurrentLocation());
+	}
+
+	private int convertGeoToInt(double degrees) {
+		return (int) (degrees * 1e6);
+	}
+
+	private double convertGeoToDouble(int microdegrees) {
+		return (double) microdegrees / 1e6;
 	}
 
 	/* HaptiMap function */
@@ -239,34 +269,38 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 		return location;
 	}
 
-	public void blackBackround(MapView mapView, GP currentLocation) {
+	public void blackBackround(MapView mapView, GeoPoint currentLocation) {
 		mapView.getOverlays().add(
-				new BlackOverlay(null, currentLocation.getLat(),
-						currentLocation.getLongi(), 4000));
+				new BlackOverlay(null, convertGeoToDouble(currentLocation
+						.getLatitudeE6()), convertGeoToDouble(currentLocation
+						.getLongitudeE6()), 4000));
 	}
 
-	public void addCircles(MapView mapView, ArrayList<GP> all_gp,
-			int nbrOfCircles, GP currentLocation) {
+	public void addCircles(MapView mapView, ArrayList<GeoPoint> all_gp,
+			int nbrOfCircles, GeoPoint currentLocation) {
 
 		int radius = getRadius(all_gp, currentLocation);
 		int step = radius / nbrOfCircles;
 		step *= 90;// 85
 
 		for (int i = 1; i <= nbrOfCircles; i++) {
-			mapView.getOverlays().add(
-					new CircleOverlay(null, currentLocation.getLat(),
-							currentLocation.getLongi(), step * i));
+			mapView.getOverlays()
+					.add(new CircleOverlay(
+							null,
+							convertGeoToDouble(currentLocation.getLatitudeE6()),
+							convertGeoToDouble(currentLocation.getLongitudeE6()),
+							step * i));
 		}
 
 	}
 
-	private int getRadius(ArrayList<GP> all_gp, GP currentLocation) {
+	private int getRadius(ArrayList<GeoPoint> all_gp, GeoPoint currentLocation) {
 
 		int longestDistance = 0;
 
-		for (GP item : all_gp) {
-			int lat = (int) item.getLat();
-			int lon = (int) item.getLongi();
+		for (GeoPoint item : all_gp) {
+			int lat = item.getLatitudeE6();
+			int lon = item.getLongitudeE6();
 
 			int thisDistance = (int) Math.sqrt(lat * lat + lon * lon);
 			if (thisDistance > longestDistance) {
@@ -279,40 +313,34 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 	}
 
 	private void addLocationMarkers(MapView mapView,
-			ArrayList<GP> all_geo_points) {
+			ArrayList<GeoPoint> all_geo_points) {
 		int radius = 200;
-		GP currentLocation = all_geo_points.get(0);
-		mapView.getOverlays().add(
-				new CurrentPositionOverlay(null, currentLocation.getLat(),
-						currentLocation.getLongi(), radius - 50));// currentposition
 
-		for (GP point : all_geo_points) {
-			if (point != currentLocation) {
-				mapView.getOverlays().add(
-						new LocationOverlay(null, point.getLat(), point
-								.getLongi(), radius, Color.RED));
-			}
+		mapView.getOverlays().add(
+				new CurrentPositionOverlay(null, userPoint.getLatitudeE6(),
+						userPoint.getLongitudeE6(), radius - 50));// currentposition
+
+		for (GeoPoint point : all_geo_points) {
+			mapView.getOverlays().add(
+					new LocationOverlay(null, convertGeoToDouble(point
+							.getLatitudeE6()), convertGeoToDouble(point
+							.getLongitudeE6()), radius, Color.RED));
 		}
 
 	}
 
-	private void addGeoPoints(ArrayList<GP> all_geo_points) {
-		all_geo_points.add(new GP(userPointDouble.getLat(), userPointDouble
-				.getLongi(), "Designcentrum (IKDC)")); // Designcentrum
-		// IKDC
-		all_geo_points.add(new GP(55.721056, 13.21277, "Magistratsvägen 57O"));
-		all_geo_points.add(new GP(55.709114, 13.167778, "Vildandsvägen 18H"));
-		all_geo_points.add(new GP(55.724313, 13.204009, "Fäladstorget 12"));
-		all_geo_points.add(new GP(55.698377, 13.216635, "Dalbyvägen 38"));
-		all_geo_points.add(new GP(55.705644, 13.186916, "Bangatan 1")); // Lunds
-		// centralstation
-		// all_geo_points.add(new GP(55.707095, 13.189404));// Close to
-		// epicentrum
-		// of Lund
+	private void addGeoPoints(ArrayList<GeoPoint> all_geo_points) {
+		all_geo_points.add(new GeoPoint(userPoint.getLatitudeE6(), userPoint
+				.getLongitudeE6()));
+		all_geo_points.add(new GeoPoint(55721056, 1321277));
+		all_geo_points.add(new GeoPoint(55709114, 13167778));
+		all_geo_points.add(new GeoPoint(55724313, 13204009));
+		all_geo_points.add(new GeoPoint(55698377, 13216635));
+		all_geo_points.add(new GeoPoint(55705644, 13186916));
 	}
 
 	public void createRightZoomLevel(MapController mc,
-			ArrayList<GP> all_geo_points) {
+			ArrayList<GeoPoint> all_geo_points) {
 
 		int minLatitude = Integer.MAX_VALUE;
 		int maxLatitude = Integer.MIN_VALUE;
@@ -320,9 +348,9 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 		int maxLongitude = Integer.MIN_VALUE;
 
 		// Find the boundaries of the item set
-		for (GP item : all_geo_points) { // item Contain list of Geopints
-			int lat = item.getLatE6();
-			int lon = item.getLongiE6();
+		for (GeoPoint item : all_geo_points) { // item Contain list of Geopints
+			int lat = item.getLatitudeE6();
+			int lon = item.getLongitudeE6();
 
 			maxLatitude = Math.max(lat, maxLatitude);
 			minLatitude = Math.min(lat, minLatitude);
@@ -498,37 +526,37 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 
 	}
 
-	private class GP {// possible extends GeoPoint
-		double lat;
-		double longi;
-		CharSequence locationName;
-
-		public GP(double lat, double longi, CharSequence locationName) {
-			this.lat = lat;
-			this.longi = longi;
-			this.locationName = locationName;
-		}
-
-		public CharSequence getName() {
-			return locationName;
-		}
-
-		public int getLongiE6() {
-			return (int) (longi * 1e6);
-		}
-
-		public int getLatE6() {
-			return (int) (lat * 1e6);
-		}
-
-		public double getLongi() {
-			return longi;
-		}
-
-		public double getLat() {
-			return lat;
-		}
-	}
+	// private class GP {// possible extends GeoPoint
+	// double lat;
+	// double longi;
+	// CharSequence locationName;
+	//
+	// public GP(double lat, double longi, CharSequence locationName) {
+	// this.lat = lat;
+	// this.longi = longi;
+	// this.locationName = locationName;
+	// }
+	//
+	// public CharSequence getName() {
+	// return locationName;
+	// }
+	//
+	// public int getLongiE6() {
+	// return (int) (longi * 1e6);
+	// }
+	//
+	// public int getLatE6() {
+	// return (int) (lat * 1e6);
+	// }
+	//
+	// public double getLongi() {
+	// return longi;
+	// }
+	//
+	// public double getLat() {
+	// return lat;
+	// }
+	// }
 
 	public void setBearing(double deg) {
 		double min_diff = Double.MAX_VALUE;
@@ -537,10 +565,12 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 		for (int i = 1; i < all_geo_points.size(); i++) {
 			double diff = Math.abs(deg
 					- CalcAngleFromNorth.calculateAngle(
-							all_geo_points.get(0).lat,
-							all_geo_points.get(0).longi,
-							all_geo_points.get(i).lat,
-							all_geo_points.get(i).longi));
+							convertGeoToDouble(userPoint.getLatitudeE6()),
+							convertGeoToDouble(userPoint.getLongitudeE6()),
+							convertGeoToDouble(all_geo_points.get(i)
+									.getLatitudeE6()),
+							convertGeoToDouble(all_geo_points.get(i)
+									.getLongitudeE6())));
 			if (diff < min_diff) {
 				min_diff = diff;
 				min_index = i;
@@ -553,9 +583,11 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 			// + all_geo_points.get(min_index).longi);
 
 			if (selectedOverlay == null) {
-				GP active = all_geo_points.get(min_index);
-				selectedOverlay = new LocationOverlay(null, active.getLat(),
-						active.getLongi(), 400, Color.GREEN);
+				GeoPoint active = all_geo_points.get(min_index);
+				selectedOverlay = new LocationOverlay(null,
+						convertGeoToDouble(active.getLatitudeE6()),
+						convertGeoToDouble(active.getLongitudeE6()), 400,
+						Color.GREEN);
 				nonPannableMapView.getOverlays().add(selectedOverlay);
 				selectedLocation = active;
 				// toast = Toast.makeText(this, selectedLocation.getName(), 1);
@@ -575,17 +607,42 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 		Toast.makeText(MapViewActivity.this, "touched screen", //
 				Toast.LENGTH_SHORT).show();
 		if (selectedLocation != null) {
-			Log.i("MapViewActivity",
-					"selectedLocation: " + selectedLocation.getName());
-//			 Toast.makeText(MapViewActivity.this, "Destination: " + selectedLocation.getName(), //
-//			 Toast.LENGTH_SHORT).show();
+			Log.i("MapViewActivity", "selectedLocation lat: "
+					+ selectedLocation.getLatitudeE6() + "longi: "
+					+ selectedLocation.getLongitudeE6());
+			int lat = selectedLocation.getLatitudeE6();
+			int longi = selectedLocation.getLongitudeE6();
+
 			Intent roadMapIntent = new Intent(MapViewActivity.this,
 					RoadMapActivity.class);
-			roadMapIntent.putExtra("lat", selectedLocation.getLat());
-			roadMapIntent.putExtra("longi", selectedLocation.getLongi());
+			roadMapIntent.putExtra("lat", lat);
+			roadMapIntent.putExtra("longi", longi);
 			startActivity(roadMapIntent);
 		} else {
 			Log.i("MapViewActivity", "selectedLocation is NULL");
 		}
+	}
+
+	public void onLocationChanged(Location location) {
+		int lat = (int) (location.getLatitude());
+		int lng = (int) (location.getLongitude());
+		currentPos = location;
+		userPoint = new GeoPoint(convertGeoToInt(currentPos.getLatitude()),
+				convertGeoToInt(currentPos.getLongitude()));
+	}
+
+	public void onProviderDisabled(String provider) {
+		Toast.makeText(this, "Disabled provider " + provider,
+				Toast.LENGTH_SHORT).show();
+	}
+
+	public void onProviderEnabled(String provider) {
+		Toast.makeText(this, "Enabled new provider " + provider,
+				Toast.LENGTH_SHORT).show();
+	}
+
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+		// TODO Auto-generated method stub
+
 	}
 }

@@ -41,7 +41,7 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
 
-public class RoadMapActivity extends MapActivity  implements Tiltable, Compass {
+public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 	private RoadOverlay roadOverlay;
 	private ArrayList<GeoPoint> all_geo_points;
 	private GeoPoint currentTarget;
@@ -58,11 +58,12 @@ public class RoadMapActivity extends MapActivity  implements Tiltable, Compass {
 	private LinearLayout mRotateViewContainer;
 	private RotateView mRotateView;
 	private GeoPoint userPoint;
-	
-	//HaptiAttributes
+
+	// HaptiAttributes
 	private MyLocationModule myLocation;
 	private Location currentPos;
 	private Location nextPos;
+	private Location goalPos;
 	private HapticGuide theGuide;
 
 	@Override
@@ -92,33 +93,41 @@ public class RoadMapActivity extends MapActivity  implements Tiltable, Compass {
 
 		mc = mapView.getController();
 		mc.setZoom(initZoom);
+
 		// Start and goal GeoPoints here
-		try {
-			Thread.sleep(10000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		GeoPoint currPos = getCurrentGeoPoint();
+		// try {
+		// Thread.sleep(10000);
+		// } catch (InterruptedException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
 
-		all_geo_points = getDirections(((double)currPos.getLatitudeE6()) / ((double)(1e6)), ((double)(currPos.getLongitudeE6())) / ((double)(1e6)), 55.720622, 13.212985);
+		// Get selectedLocation from MapViewActivity
+		handleIntent();
 
-		if (all_geo_points.size() == 0) {
-			Log.d("RoadMap", "Arraylist zero elem");
-		}
-		GeoPoint moveTo = all_geo_points.get(0);
-		mc.animateTo(moveTo);// ska ha current location
-		mc.setZoom(14);
-		roadOverlay = new RoadOverlay(all_geo_points);
-		mapView.getOverlays().add(roadOverlay);// For the next view
-		// createRightZoomLevel(mc, all_geo_points);
+		startHapticGuide();
 
-		all_geo_points.remove(0);// remove the first node
-		
-		//kommer att använda all_geo... för att få ut första guid punkten
-		
-		currentTarget = all_geo_points.get(0);
-
+		/*
+		 * GeoPoint currPos = getCurrentGeoPoint();
+		 * 
+		 * all_geo_points = getDirections(((double) currPos.getLatitudeE6()) /
+		 * ((double) (1e6)), ((double) (currPos.getLongitudeE6())) / ((double)
+		 * (1e6)), 55.720622, 13.212985);
+		 * 
+		 * if (all_geo_points.size() == 0) { Log.d("RoadMap",
+		 * "Arraylist zero elem"); } GeoPoint moveTo = all_geo_points.get(0);
+		 * mc.animateTo(moveTo);// ska ha current location mc.setZoom(14);
+		 * roadOverlay = new RoadOverlay(all_geo_points);
+		 * mapView.getOverlays().add(roadOverlay);// For the next view //
+		 * createRightZoomLevel(mc, all_geo_points);
+		 * 
+		 * all_geo_points.remove(0);// remove the first node
+		 * 
+		 * // kommer att anvÃ¤nda all_geo... fÃ¶r att fÃ¥ ut fÃ¶rsta guid
+		 * punkten
+		 * 
+		 * currentTarget = all_geo_points.get(0);
+		 */
 		if (savedInstanceState != null) {
 			mModeCompass = savedInstanceState.getBoolean(
 					SAVED_STATE_COMPASS_MODE, false);
@@ -131,6 +140,24 @@ public class RoadMapActivity extends MapActivity  implements Tiltable, Compass {
 		final SensorEventListener mEventListener2 = new CompassListener(
 				sensorManager, this);
 		setListners(sensorManager, mEventListener2);
+	}
+
+	private void handleIntent() {
+		Bundle extras = getIntent().getExtras();
+		if (extras == null) {
+			return;
+		}
+		int lat = extras.getInt("lat");
+		int longi = extras.getInt("longi");
+		if (lat != 0 && longi != 0) {
+			goalPos = geoToLocation(new GeoPoint(lat, longi));
+
+			Toast.makeText(
+					RoadMapActivity.this,
+					"Goal location is: " + goalPos.getLatitude()
+							+ goalPos.getLongitude(), Toast.LENGTH_SHORT)
+					.show();
+		}
 	}
 
 	private void setListners(SensorManager sensorManager,
@@ -149,7 +176,7 @@ public class RoadMapActivity extends MapActivity  implements Tiltable, Compass {
 	
 	public void setNextNode(GeoPoint newPoint){//Måste implementeras
 		
-		WayPoint nextNode = new WayPoint("nextNode", GeoToLocation(newPoint));
+		WayPoint nextNode = new WayPoint("nextNode", geoToLocation(newPoint));
 
 		theGuide.setNextDestination(nextNode);
 	}
@@ -385,9 +412,9 @@ public class RoadMapActivity extends MapActivity  implements Tiltable, Compass {
 	public void onResume() {
 		super.onResume();
 
-		toogleRotateView(!mModeCompass);
-		ToggleButton toggleCompassButton = (ToggleButton) findViewById(R.id.button_compass);
-		toggleCompassButton.setChecked(mModeCompass);
+//		toogleRotateView(!mModeCompass);
+//		ToggleButton toggleCompassButton = (ToggleButton) findViewById(R.id.button_compass);
+//		toggleCompassButton.setChecked(mModeCompass);
 
 		// shows the my location dot centered on your last known location
 		mMyLocationOverlay.enableMyLocation();
@@ -497,16 +524,12 @@ public class RoadMapActivity extends MapActivity  implements Tiltable, Compass {
 
 	/* HaptiMap function */
 	private void fetchAndSetCurrentPosition() {
-		 currentPos = myLocation.getCurrentLocation();
-		 Location tmpPos = myLocation.getCurrentLocation();
+//		currentPos = myLocation.getCurrentLocation();
 
-		// Lund central
-		//currentPos = GeoToLocation(new GeoPoint(55705644, 13186916));
+		// IKDC 55.714928,13.212816
+		currentPos = geoToLocation(new GeoPoint(55714928, 13212816));
 
-		 //currentPos.setLatitude(55.600459);
-		 //currentPos.setLongitude(12.96725);
-
-		if (myLocation.getCurrentLocation() == null) {
+		if (currentPos == null) {
 			Toast.makeText(
 					RoadMapActivity.this,
 					"No GPS signal - using Designcentrum IKDC fixed position instead",
@@ -515,16 +538,12 @@ public class RoadMapActivity extends MapActivity  implements Tiltable, Compass {
 
 		} else {
 			Toast.makeText(
-			RoadMapActivity.this,
-			"Current location set to: " + currentPos.getLatitude()
-			 + ", " + currentPos.getLongitude(),
-			Toast.LENGTH_SHORT).show();
-			Log.i(TAG, "Current location set to: " + currentPos.getLatitude()
-			+ ", " + currentPos.getLongitude());
-			Toast.makeText(RoadMapActivity.this,
-					"GPS signal is good - current position is set",
+					RoadMapActivity.this,
+					"Current location set to: " + currentPos.getLatitude()
+							+ ", " + currentPos.getLongitude(),
 					Toast.LENGTH_SHORT).show();
-
+			Log.i(TAG, "Current location set to: " + currentPos.getLatitude()
+					+ ", " + currentPos.getLongitude());
 		}
 		// Log.i(TAG, "" + myLocation.getCurrentLocation());
 	}
@@ -533,15 +552,16 @@ public class RoadMapActivity extends MapActivity  implements Tiltable, Compass {
 	private void guideToSavedPosition() {
 		// nextPos = GeoToLocation(new GeoPoint(55705248, 13186763));
 
-		if (currentPos != null) {
+		if (goalPos != null) {
 
-			WayPoint goal = new WayPoint("goal", currentPos);
+			WayPoint goal = new WayPoint("goal", goalPos);
 
 			theGuide.setNextDestination(goal);
 
 			theGuide.onStart();
-			Log.i(TAG, "Guiding to " + currentPos.getLatitude() + ", "
-					+ currentPos.getLongitude());
+			Log.i(TAG,
+					"Guiding to " + goalPos.getLatitude() + ", "
+							+ goalPos.getLongitude());
 		} else {
 			// Toast.makeText(GuidingService.this,
 			// "no GPS signal - cannot guide",
@@ -552,7 +572,7 @@ public class RoadMapActivity extends MapActivity  implements Tiltable, Compass {
 	}
 
 	/* HaptiMap function */
-	private Location GeoToLocation(GeoPoint geoPoint) {
+	private Location geoToLocation(GeoPoint geoPoint) {
 		Location location = new Location("dummyProvider");
 		location.setLatitude(geoPoint.getLatitudeE6() / 1E6);
 		location.setLongitude(geoPoint.getLongitudeE6() / 1E6);
