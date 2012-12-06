@@ -45,7 +45,7 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 
 	private static final String SAVED_STATE_COMPASS_MODE = "com.touchboarder.example.modecompass";
 	@SuppressWarnings("unused")
-	private final String TAG = RoadMapActivity.class.getSimpleName();
+	private final String TAG = MapViewActivity.class.getSimpleName();
 	private NonPannableMapView nonPannableMapView;
 	private MapController mc;
 	private boolean mModeCompass = false;
@@ -56,12 +56,14 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 	private SensorManager mSensorManager;
 	private LinearLayout mRotateViewContainer;
 	private RotateView mRotateView;
-	private GeoPoint userPoint;
+
 	private ArrayList<GP> all_geo_points;
 	/* HaptiMap attributes */
 	private MyLocationModule myLocation;
 	private Location currentPos;
 	private Location nextPos;
+	private GeoPoint userPointInt;
+	private GP userPointDouble;
 	private HapticGuide theGuide;
 
 	@Override
@@ -87,18 +89,15 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 		all_geo_points = new ArrayList<GP>();
 		addGeoPoints(all_geo_points);
 
-		GeoPoint moveTo = new GeoPoint(all_geo_points.get(0).getLatE6(),
-				all_geo_points.get(0).getLongiE6());
-		mc.animateTo(moveTo);// ska ha current location
+		mc.animateTo(userPointInt);// ska ha current location
 		mc.setZoom(14);
 		// mapView.getOverlays().add(new RoadOverlay(all_geo_points));//For the
 		// next view
 		// createRightZoomLevel(mc, all_geo_points);
 		int nbrOfCircles = 3;
-		GP currentLocation = all_geo_points.get(0);
-		blackBackround(nonPannableMapView, currentLocation);
+		blackBackround(nonPannableMapView, userPointDouble);
 		addCircles(nonPannableMapView, all_geo_points, nbrOfCircles,
-				currentLocation);
+				userPointDouble);
 		addLocationMarkers(nonPannableMapView, all_geo_points);
 		// mc.animateTo(new GeoPoint(latitudeE6, longitudeE6));
 
@@ -179,15 +178,15 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 	/* HaptiMap function */
 	private void fetchAndSetCurrentPosition() {
 		currentPos = myLocation.getCurrentLocation();
-		// Location tmpPos = myLocation.getCurrentLocation();
 
-		// Lund central
-		currentPos = GeoToLocation(new GeoPoint(55705644, 13186916));
+		// IKDC 55.714928,13.212816
+		currentPos = geoToLocation(new GeoPoint(55714928, 13212816));
+		userPointDouble = new GP(currentPos.getLatitude(),
+				currentPos.getLongitude(), "Current pos");
+		userPointInt = new GeoPoint((int) (currentPos.getLatitude() * 1e6),
+				(int) (currentPos.getLongitude() * 1e6));
 
-		// currentPos.setLatitude(55.600459);
-		// currentPos.setLongitude(12.96725);
-
-		if (myLocation.getCurrentLocation() == null) {
+		if (currentPos == null) {
 			// Toast.makeText(
 			// MapViewActivity.this,
 			// "No GPS signal - using Designcentrum IKDC fixed position instead",
@@ -233,7 +232,7 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 	}
 
 	/* HaptiMap function */
-	private Location GeoToLocation(GeoPoint geoPoint) {
+	private Location geoToLocation(GeoPoint geoPoint) {
 		Location location = new Location("dummyProvider");
 		location.setLatitude(geoPoint.getLatitudeE6() / 1E6);
 		location.setLongitude(geoPoint.getLongitudeE6() / 1E6);
@@ -297,16 +296,9 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 
 	}
 
-	private void addGeoPoints(ArrayList<GP> all_geo_points) {// 55.70462000000001,
-																// 13.191360
-																// all_geo_points.add(new
-																// GP(55.70462000000001,
-																// 13.191360));
-																// // Stora
-																// gr�br�dersgatan
-																// Lund
+	private void addGeoPoints(ArrayList<GP> all_geo_points) {
 		all_geo_points
-				.add(new GP(55.714976, 13.212644, "Designcentrum (IKDC)")); // Designcentrum
+				.add(new GP(55.714928, 13.212816, "Designcentrum (IKDC)")); // Designcentrum
 																			// IKDC
 		all_geo_points.add(new GP(55.721056, 13.21277, "Magistratsvägen 57O"));
 		all_geo_points.add(new GP(55.709114, 13.167778, "Vildandsvägen 18H"));
@@ -391,16 +383,18 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 		// shows the my location dot centered on your last known location
 		mMyLocationOverlay.enableMyLocation();
 
-		if (userPoint == null)
+		/*
+		if (userPointInt == null)
 			mMyLocationOverlay.runOnFirstFix(new Runnable() {
 				public void run() {
-					userPoint = mMyLocationOverlay.getMyLocation();
+					userPointInt = mMyLocationOverlay.getMyLocation();
 					// if(userPoint!=null)
 					// mc.animateTo(userPoint);
 
 				}
 			});
-		// else mc.animateTo(userPoint);*/
+		// else mc.animateTo(userPoint);
+		*/
 	}
 
 	@Override
