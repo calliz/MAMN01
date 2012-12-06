@@ -297,9 +297,9 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 	}
 
 	private void addGeoPoints(ArrayList<GP> all_geo_points) {
-		all_geo_points
-				.add(new GP(55.714928, 13.212816, "Designcentrum (IKDC)")); // Designcentrum
-																			// IKDC
+		all_geo_points.add(new GP(userPointDouble.getLat(), userPointDouble
+				.getLongi(), "Designcentrum (IKDC)")); // Designcentrum
+		// IKDC
 		all_geo_points.add(new GP(55.721056, 13.21277, "Magistratsvägen 57O"));
 		all_geo_points.add(new GP(55.709114, 13.167778, "Vildandsvägen 18H"));
 		all_geo_points.add(new GP(55.724313, 13.204009, "Fäladstorget 12"));
@@ -384,17 +384,13 @@ public class MapViewActivity extends MapActivity implements Compass, Touch {
 		mMyLocationOverlay.enableMyLocation();
 
 		/*
-		if (userPointInt == null)
-			mMyLocationOverlay.runOnFirstFix(new Runnable() {
-				public void run() {
-					userPointInt = mMyLocationOverlay.getMyLocation();
-					// if(userPoint!=null)
-					// mc.animateTo(userPoint);
-
-				}
-			});
-		// else mc.animateTo(userPoint);
-		*/
+		 * if (userPointInt == null) mMyLocationOverlay.runOnFirstFix(new
+		 * Runnable() { public void run() { userPointInt =
+		 * mMyLocationOverlay.getMyLocation(); // if(userPoint!=null) //
+		 * mc.animateTo(userPoint);
+		 * 
+		 * } }); // else mc.animateTo(userPoint);
+		 */
 	}
 
 	@Override
