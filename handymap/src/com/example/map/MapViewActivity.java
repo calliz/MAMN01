@@ -76,7 +76,7 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 		super.onCreate(savedInstanceState);
 
 		/* HaptiMap code */
-		// startHapticGuide();
+		 startHapticGuide();
 
 		// Get the location manager
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -176,9 +176,8 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 
 		theGuide = new HapticGuide(this);
 
-		while (!fetchAndSetCurrentPosition())
-			;
-
+		fetchAndSetCurrentPosition();
+		
 		// guideToSavedPosition();
 
 		// theGuide.registerHapticGuideEventListener(new
@@ -203,10 +202,10 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 
 	/* HaptiMap function */
 	private boolean fetchAndSetCurrentPosition() {
-		currentPos = myLocation.getCurrentLocation();
+//		currentPos = myLocation.getCurrentLocation();
 
 		// IKDC 55.714928,13.212816 JAJJAJA
-		// currentPos = geoToLocation(new GeoPoint(55714928, 13212816));
+		 currentPos = geoToLocation(new GeoPoint(55714928, 13212816));
 
 		if (currentPos == null) {
 			Toast.makeText(MapViewActivity.this, "No GPS signal - waiting",
