@@ -12,9 +12,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
-import org.haptimap.hcimodules.guiding.HapticGuide;
-import org.haptimap.hcimodules.util.MyLocationModule;
-import org.haptimap.hcimodules.util.WayPoint;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -35,6 +32,11 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+
+
+import org.haptimap.hcimodules.guiding.HapticGuide;
+import org.haptimap.hcimodules.util.MyLocationModule;
+import org.haptimap.hcimodules.util.WayPoint;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
