@@ -24,7 +24,10 @@ import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
+import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -481,6 +484,12 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 		this.isTilted = b;
 		// Log.e("Tilted","Tilting!");
 	}
+	
+	public void playNotification(){
+		MediaPlayer player = MediaPlayer.create(this,
+			    Settings.System.DEFAULT_RINGTONE_URI);
+			player.start();
+	}
 
 	/* HaptiMap function */
 	private void startHapticGuide() {
@@ -517,7 +526,9 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 					
 					Toast.makeText(RoadMapActivity.this, "Du är framme!",
 							Toast.LENGTH_SHORT).show();
-					//Kanske bling ljud in här
+					
+					RoadMapActivity.this.playNotification();
+				
 					//Toast.makeText(RoadMapActivity.this, "You have arrived!", Toast.LENGTH_SHORT).show);
 				}
 
