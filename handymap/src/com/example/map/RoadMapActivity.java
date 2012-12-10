@@ -218,11 +218,6 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 		return currPos;
 	}
 
-	public void setNewRoad(RoadOverlay newOverlay) {
-		mapView.getOverlays().remove(roadOverlay);
-		mapView.getOverlays().add(newOverlay);
-	}
-
 	public void createRightZoomLevel(MapController mc,
 			ArrayList<GeoPoint> all_geo_points) {
 
@@ -519,6 +514,9 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 				// stefan mod:
 				if(pointReached()){
 					Log.d("onDestinationReached", "Final destination reached!!!!!!!!!!!!!!!!");
+					
+					Toast.makeText(RoadMapActivity.this, "Du är framme!",
+							Toast.LENGTH_SHORT).show();
 					//Kanske bling ljud in här
 					//Toast.makeText(RoadMapActivity.this, "You have arrived!", Toast.LENGTH_SHORT).show);
 				}
