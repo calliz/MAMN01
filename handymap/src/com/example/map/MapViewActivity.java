@@ -12,15 +12,20 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
+import org.haptimap.hcimodules.guiding.HapticGuide;
+import org.haptimap.hcimodules.util.MyLocationModule;
+import org.haptimap.hcimodules.util.WayPoint;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -33,11 +38,6 @@ import android.view.View.OnTouchListener;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-
-import org.haptimap.hcimodules.guiding.HapticGuide;
-import org.haptimap.hcimodules.util.MyLocationModule;
-import org.haptimap.hcimodules.util.WayPoint;
-
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
@@ -45,7 +45,7 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 
 public class MapViewActivity extends MapActivity implements Compass, Touch,
-		LocationListener {
+		MyLocation {
 
 	private static final String SAVED_STATE_COMPASS_MODE = "com.touchboarder.example.modecompass";
 	@SuppressWarnings("unused")
@@ -71,12 +71,16 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 	private LocationManager locationManager;
 	private String provider;
 
+	private LocationListener myLocationListener;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		/* HaptiMap code */
-		startHapticGuide();
+		// startHapticGuide();
+
+		setLocationManager();
 
 		setupMapView(savedInstanceState);
 
@@ -141,9 +145,6 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 		final SensorEventListener mEventListener = new CompassListener(
 				sensorManager, this);
 		setListners(sensorManager, mEventListener);
-		final TouchListener touchListener = new TouchListener(this);
-
-		// mapView.setOnTouchListener(touchListener);
 
 		nonPannableMapView.setOnTouchListener(new OnTouchListener() {
 
@@ -159,6 +160,26 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 		mMyLocationOverlay.isCompassEnabled();
 		toogleRotateView(mModeCompass);
 		nonPannableMapView.setBuiltInZoomControls(false);
+	}
+
+	private void setLocationManager() {
+
+		myLocationListener = new MyLocationListener(this);
+		// Get the location manager
+		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		// Define the criteria how to select the locatioin provider -> use
+		// default
+		Criteria criteria = new Criteria();
+		provider = locationManager.getBestProvider(criteria, false);
+		Location location = locationManager.getLastKnownLocation(provider);
+
+		// Initialize the location fields
+		if (location != null) {
+			Log.i(TAG, "Location set to lat: " + location.getLatitude()
+					+ " long: " + location.getLongitude());
+			myLocationListener.onLocationChanged(location);
+		} else {
+		}
 	}
 
 	private void setListners(SensorManager sensorManager,
@@ -192,7 +213,7 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 		//
 		// public void onRateIntervalChanged(int millis) {
 		//
-		// }
+		// }d
 		//
 		// public void onPrepared(boolean onPrepared) {
 		//
@@ -209,19 +230,25 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 
 	/* HaptiMap function */
 	private void fetchAndSetCurrentPosition() {
-		// currentPos = myLocation.getCurrentLocation();
+		currentPosLocation = myLocation.getCurrentLocation();
 
 		// IKDC 55.714928,13.212816 JAJJAJA
-		currentPosLocation = geoToLocation(new GeoPoint(55714928, 13212816));
+		// currentPosLocation = geoToLocation(new GeoPoint(55714928, 13212816));
 
 		if (currentPosLocation == null) {
 			Toast.makeText(MapViewActivity.this, "No GPS signal - waiting",
 					Toast.LENGTH_SHORT).show();
-			// Log.i(TAG, "No GPS signal - no current position set");
+			Log.e(TAG, "currentPosLocation null");
+			this.finish();
 		} else {
 			currentPosGeoPoint = new GeoPoint(
 					convertGeoToInt(currentPosLocation.getLatitude()),
 					convertGeoToInt(currentPosLocation.getLongitude()));
+			if (currentPosGeoPoint == null) {
+				Log.e(TAG, "currentPosGeoPoint null");
+				this.finish();
+			}
+
 			Toast.makeText(
 					MapViewActivity.this,
 					"Current location set to: "
@@ -298,8 +325,8 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 	public void addCircles(MapView mapView, ArrayList<GeoPoint> all_gp,
 			int nbrOfCircles, GeoPoint currentLocation) {
 
-		int radius = getRadius(all_gp, currentLocation);
-		int step = radius / nbrOfCircles;
+		double radius = getRadius(all_gp, currentLocation);
+		int step = (int) radius / nbrOfCircles;
 		step *= 90;// 85
 
 		for (int i = 1; i <= nbrOfCircles; i++) {
@@ -313,15 +340,16 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 
 	}
 
-	private int getRadius(ArrayList<GeoPoint> all_gp, GeoPoint currentLocation) {
+	private double getRadius(ArrayList<GeoPoint> all_gp,
+			GeoPoint currentLocation) {
 
-		int longestDistance = 0;
+		double longestDistance = 0;
 
 		for (GeoPoint item : all_gp) {
-			int lat = item.getLatitudeE6();
-			int lon = item.getLongitudeE6();
+			double lat = convertGeoToDouble(item.getLatitudeE6());
+			double lon = convertGeoToDouble(item.getLongitudeE6());
 
-			int thisDistance = (int) Math.sqrt(lat * lat + lon * lon);
+			double thisDistance = Math.sqrt(lat * lat + lon * lon);
 			if (thisDistance > longestDistance) {
 
 				longestDistance = thisDistance;
@@ -343,21 +371,22 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 						radius - 50));// currentposition
 
 		for (GeoPoint point : all_geo_points) {
-			mapView.getOverlays().add(
-					new LocationOverlay(null, convertGeoToDouble(point
-							.getLatitudeE6()), convertGeoToDouble(point
-							.getLongitudeE6()), radius, Color.RED));
+			if (point != currentPosGeoPoint) {
+				mapView.getOverlays().add(
+						new LocationOverlay(null, convertGeoToDouble(point
+								.getLatitudeE6()), convertGeoToDouble(point
+								.getLongitudeE6()), radius, Color.RED));
+			}
 		}
-
 	}
 
 	private void addGeoPoints(ArrayList<GeoPoint> all_geo_points) {
-		all_geo_points.add(new GeoPoint(55714928, 13212816));
-		all_geo_points.add(new GeoPoint(55721056, 1321277));
-		all_geo_points.add(new GeoPoint(55709114, 13167778));
-		all_geo_points.add(new GeoPoint(55724313, 13204009));
-		all_geo_points.add(new GeoPoint(55698377, 13216635));
-		all_geo_points.add(new GeoPoint(55705644, 13186916));
+		all_geo_points.add(currentPosGeoPoint);
+//		all_geo_points.add(new GeoPoint(55705571, 13186895));
+//		all_geo_points.add(new GeoPoint(55720754, 13221481));
+//		all_geo_points.add(new GeoPoint(55703975, 13203114));
+		all_geo_points.add(new GeoPoint(55709458, 13214323));
+		// all_geo_points.add(new GeoPoint(55705644, 13186916));
 	}
 
 	public void createRightZoomLevel(MapController mc,
@@ -423,7 +452,8 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 	@Override
 	public void onResume() {
 		super.onResume();
-
+		locationManager.requestLocationUpdates(provider, 400, 1,
+				myLocationListener);
 		// toogleRotateView(!mModeCompass);
 		// ToggleButton toggleCompassButton = (ToggleButton)
 		// findViewById(R.id.button_compass);
@@ -446,6 +476,7 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 	public void onPause() {
 		super.onPause();
 		mMyLocationOverlay.disableCompass();
+		locationManager.removeUpdates(myLocationListener);
 	}
 
 	// Called during the activity life cycle,
@@ -631,7 +662,7 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 				Toast.LENGTH_SHORT).show();
 		if (selectedLocation != null) {
 			Log.i("MapViewActivity", "selectedLocation lat: "
-					+ selectedLocation.getLatitudeE6() + "longi: "
+					+ selectedLocation.getLatitudeE6() + " longi: "
 					+ selectedLocation.getLongitudeE6());
 			int lat = selectedLocation.getLatitudeE6();
 			int longi = selectedLocation.getLongitudeE6();
@@ -646,28 +677,8 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 		}
 	}
 
-	public void onLocationChanged(Location location) {
-		int lat = (int) (location.getLatitude());
-		int lng = (int) (location.getLongitude());
-		currentPosLocation = location;
-		currentPosGeoPoint = new GeoPoint(
-				convertGeoToInt(currentPosLocation.getLatitude()),
-				convertGeoToInt(currentPosLocation.getLongitude()));
+	public void setCurrentLocation(GeoPoint geoPoint) {
+		currentPosGeoPoint = geoPoint;
 	}
 
-	public void onProviderDisabled(String provider) {
-		Toast.makeText(this, "Disabled provider " + provider,
-				Toast.LENGTH_SHORT).show();
-	}
-
-	public void onProviderEnabled(String provider) {
-		Toast.makeText(this, "Enabled new provider " + provider,
-				Toast.LENGTH_SHORT).show();
-	}
-
-	public void onStatusChanged(String provider, int status, Bundle extras) {
-		Toast.makeText(this,
-				"Status changed of provider " + provider + " to " + status,
-				Toast.LENGTH_SHORT).show();
-	}
 }
