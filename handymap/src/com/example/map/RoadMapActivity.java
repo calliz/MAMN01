@@ -169,15 +169,19 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 				SensorManager.SENSOR_DELAY_NORMAL);
 	}
 
-	public GeoPoint getCurrentPos() {// Måste implementeras
-		return null;
-	}
-
-	public void setNextNode(GeoPoint newPoint) {// Måste implementeras
-
-		WayPoint nextNode = new WayPoint("nextNode", geoToLocation(newPoint));
+	public void setNextNode(GeoPoint newPoint){//Måste implementeras
+		
+		WayPoint nextNode = new WayPoint("nextNode", GeoToLocation(newPoint));
 
 		theGuide.setNextDestination(nextNode);
+	}
+	
+	/* HaptiMap function */
+	private Location GeoToLocation(GeoPoint geoPoint) {
+		Location location = new Location("dummyProvider");
+		location.setLatitude(geoPoint.getLatitudeE6() / 1E6);
+		location.setLongitude(geoPoint.getLongitudeE6() / 1E6);
+		return location;
 	}
 
 	public boolean pointReached() {// returns true if finaldestination reached.
@@ -188,32 +192,30 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 		all_geo_points.remove(0);
 		currentTarget = all_geo_points.get(0);
 		setNextNode(currentTarget);
-
-		all_geo_points.add(0, getCurrentGeoPoint());// lägg till current
-													// position för uppritning,
-													// tas bort sen.
-
+		
+		all_geo_points.add(0, getCurrentGeoPoint());//lägg till current position för uppritning, tas bort sen.
+		
+		
 		mapView.getOverlays().remove(roadOverlay);
 		roadOverlay = new RoadOverlay(all_geo_points);
-		all_geo_points.remove(0);// för att hålla listan i ok state
+		all_geo_points.remove(0);//för att hålla listan i ok state
 		mapView.getOverlays().add(roadOverlay);
 
 		return false;
 
 	}
-
-	public GeoPoint getCurrentGeoPoint() {
-		// Location loc = myLocation.getCurrentLocation();
-
-		if (currentPosLocation == null) {
+	
+	public GeoPoint getCurrentGeoPoint(){
+		Location loc = myLocation.getCurrentLocation();
+		
+		if(loc  == null){
 			Log.d("getCurrentGeoPoint", "Null i location");
-			this.finish();
+			System.exit(1);
 		}
-
-		// GeoPoint currPos = new GeoPoint((int) (loc.getLatitude() * 1e6),
-		// (int) (loc.getLongitude() * 1e6));
-
-		return currentPosGeoPoint;
+		
+		GeoPoint currPos = new GeoPoint((int) (loc.getLatitude()*1e6), (int)(loc.getLongitude() * 1e6));
+				
+		return currPos;
 	}
 
 	public void setNewRoad(RoadOverlay newOverlay) {
@@ -515,11 +517,10 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 				// Toast.makeText(GuidingService.this, "You have arrived!", //
 				// Toast.LENGTH_SHORT).show());
 				// stefan mod:
-				if (pointReached()) {
-					Log.d("onDestinationReached",
-							"Final destination reached!!!!!!!!!!!!!!!!");
-					// Toast.makeText(RoadMapActivity.this, "You have arrived!",
-					// Toast.LENGTH_SHORT).show);
+				if(pointReached()){
+					Log.d("onDestinationReached", "Final destination reached!!!!!!!!!!!!!!!!");
+					//Kanske bling ljud in här
+					//Toast.makeText(RoadMapActivity.this, "You have arrived!", Toast.LENGTH_SHORT).show);
 				}
 
 			}
