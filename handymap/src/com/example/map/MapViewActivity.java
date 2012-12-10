@@ -19,13 +19,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -60,13 +58,13 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 	private SensorManager mSensorManager;
 	private LinearLayout mRotateViewContainer;
 	private RotateView mRotateView;
-	private GeoPoint userPoint;
+	private GeoPoint currentPosGeoPoint;
 	private ArrayList<GeoPoint> all_geo_points;
 
 	/* HaptiMap attributes */
 	private MyLocationModule myLocation;
-	private Location currentPos;
-	private Location nextPos;
+	private Location currentPosLocation;
+	private Location nextPosLocation;
 	private HapticGuide theGuide;
 	private LocationManager locationManager;
 	private String provider;
@@ -76,82 +74,89 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 		super.onCreate(savedInstanceState);
 
 		/* HaptiMap code */
-		 startHapticGuide();
+		startHapticGuide();
 
-		// Get the location manager
-		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		// Define the criteria how to select the locatioin provider -> use
-		// default
-		Criteria criteria = new Criteria();
-		provider = locationManager.getBestProvider(criteria, false);
-		Location location = locationManager.getLastKnownLocation(provider);
+		setupMapView(savedInstanceState);
 
-		// Initialize the location fields
-		if (location != null) {
-			System.out.println("Provider " + provider + " has been selected.");
-			onLocationChanged(location);
-			
-			setContentView(R.layout.map_view_activity);
-			mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-			mRotateViewContainer = (LinearLayout) findViewById(R.id.rotating_view);
-			mRotateView = new RotateView(this);
+		// // Get the location manager
+		// locationManager = (LocationManager)
+		// getSystemService(Context.LOCATION_SERVICE);
+		// // Define the criteria how to select the locatioin provider -> use
+		// // default
+		// Criteria criteria = new Criteria();
+		// provider = locationManager.getBestProvider(criteria, false);
+		// Location location = locationManager.getLastKnownLocation(provider);
+		//
+		// // Initialize the location fields
+		// if (location != null) {
+		// System.out.println("Provider " + provider + " has been selected.");
+		// onLocationChanged(location);
+		//
+		// setupMapView(savedInstanceState);
+		// } else {
+		// Toast.makeText(this, "No GPS signal - restart application ",
+		// Toast.LENGTH_SHORT).show();
+		// this.finish();
+		// }
 
-			nonPannableMapView = (NonPannableMapView) findViewById(R.id.mapview);
-			mMyLocationOverlay = new MyLocationOverlay(this, nonPannableMapView);
+	}
 
-			nonPannableMapView.setBuiltInZoomControls(false);
+	private void setupMapView(Bundle savedInstanceState) {
+		setContentView(R.layout.map_view_activity);
+		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+		mRotateViewContainer = (LinearLayout) findViewById(R.id.rotating_view);
+		mRotateView = new RotateView(this);
 
-			mc = nonPannableMapView.getController();
-			// ArrayList<GeoPoint> all_geo_points = getDirections(55.70462000000001,
-			// 13.191360, 55.604640, 13.00382);
-			all_geo_points = new ArrayList<GeoPoint>();
-			addGeoPoints(all_geo_points);
+		nonPannableMapView = (NonPannableMapView) findViewById(R.id.mapview);
+		mMyLocationOverlay = new MyLocationOverlay(this, nonPannableMapView);
 
-			mc.animateTo(userPoint);// ska ha current location
-			mc.setZoom(14);
-			// mapView.getOverlays().add(new RoadOverlay(all_geo_points));//For the
-			// next view
-			// createRightZoomLevel(mc, all_geo_points);
-			int nbrOfCircles = 3;
-			blackBackround(nonPannableMapView, userPoint);
-			addCircles(nonPannableMapView, all_geo_points, nbrOfCircles, userPoint);
-			addLocationMarkers(nonPannableMapView, all_geo_points);
-			// mc.animateTo(new GeoPoint(latitudeE6, longitudeE6));
+		nonPannableMapView.setBuiltInZoomControls(false);
 
-			if (savedInstanceState != null) {
-				mModeCompass = savedInstanceState.getBoolean(
-						SAVED_STATE_COMPASS_MODE, false);
-			}
-			SensorManager sensorManager = (SensorManager) this
-					.getSystemService(SENSOR_SERVICE);
-			final SensorEventListener mEventListener = new CompassListener(
-					sensorManager, this);
-			setListners(sensorManager, mEventListener);
-			final TouchListener touchListener = new TouchListener(this);
+		mc = nonPannableMapView.getController();
+		// ArrayList<GeoPoint> all_geo_points = getDirections(55.70462000000001,
+		// 13.191360, 55.604640, 13.00382);
+		all_geo_points = new ArrayList<GeoPoint>();
+		addGeoPoints(all_geo_points);
 
-			// mapView.setOnTouchListener(touchListener);
+		mc.animateTo(currentPosGeoPoint);// ska ha current location
+		mc.setZoom(14);
+		// mapView.getOverlays().add(new RoadOverlay(all_geo_points));//For the
+		// next view
+		// createRightZoomLevel(mc, all_geo_points);
+		int nbrOfCircles = 3;
+		blackBackround(nonPannableMapView, currentPosGeoPoint);
+		addCircles(nonPannableMapView, all_geo_points, nbrOfCircles,
+				currentPosGeoPoint);
+		addLocationMarkers(nonPannableMapView, all_geo_points);
+		// mc.animateTo(new GeoPoint(latitudeE6, longitudeE6));
 
-			nonPannableMapView.setOnTouchListener(new OnTouchListener() {
-
-				public boolean onTouch(View v, MotionEvent event) {
-					if (event.getAction() == MotionEvent.ACTION_UP) {
-						touched();
-						return true;
-					}
-					return false;
-				}
-			});
-
-			mMyLocationOverlay.isCompassEnabled();
-			toogleRotateView(mModeCompass);
-			nonPannableMapView.setBuiltInZoomControls(false);
-		} else {
-			Toast.makeText(this, "No GPS signal - restart application ",
-					Toast.LENGTH_SHORT).show();
-			this.finish();
+		if (savedInstanceState != null) {
+			mModeCompass = savedInstanceState.getBoolean(
+					SAVED_STATE_COMPASS_MODE, false);
 		}
+		SensorManager sensorManager = (SensorManager) this
+				.getSystemService(SENSOR_SERVICE);
+		final SensorEventListener mEventListener = new CompassListener(
+				sensorManager, this);
+		setListners(sensorManager, mEventListener);
+		final TouchListener touchListener = new TouchListener(this);
 
-		
+		// mapView.setOnTouchListener(touchListener);
+
+		nonPannableMapView.setOnTouchListener(new OnTouchListener() {
+
+			public boolean onTouch(View v, MotionEvent event) {
+				if (event.getAction() == MotionEvent.ACTION_UP) {
+					touched();
+					return true;
+				}
+				return false;
+			}
+		});
+
+		mMyLocationOverlay.isCompassEnabled();
+		toogleRotateView(mModeCompass);
+		nonPannableMapView.setBuiltInZoomControls(false);
 	}
 
 	private void setListners(SensorManager sensorManager,
@@ -170,14 +175,14 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 
 		myLocation.onStart();
 
-		currentPos = null;
+		currentPosLocation = null;
 
-		nextPos = null;
+		nextPosLocation = null;
 
 		theGuide = new HapticGuide(this);
 
 		fetchAndSetCurrentPosition();
-		
+
 		// guideToSavedPosition();
 
 		// theGuide.registerHapticGuideEventListener(new
@@ -201,31 +206,44 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 	}
 
 	/* HaptiMap function */
-	private boolean fetchAndSetCurrentPosition() {
-//		currentPos = myLocation.getCurrentLocation();
+	private void fetchAndSetCurrentPosition() {
+		// currentPos = myLocation.getCurrentLocation();
 
 		// IKDC 55.714928,13.212816 JAJJAJA
-		 currentPos = geoToLocation(new GeoPoint(55714928, 13212816));
+		currentPosLocation = geoToLocation(new GeoPoint(55714928, 13212816));
 
-		if (currentPos == null) {
+		if (currentPosLocation == null) {
 			Toast.makeText(MapViewActivity.this, "No GPS signal - waiting",
 					Toast.LENGTH_SHORT).show();
 			// Log.i(TAG, "No GPS signal - no current position set");
-			return false;
 		} else {
-			userPoint = new GeoPoint(convertGeoToInt(currentPos.getLatitude()),
-					convertGeoToInt(currentPos.getLongitude()));
+			currentPosGeoPoint = new GeoPoint(
+					convertGeoToInt(currentPosLocation.getLatitude()),
+					convertGeoToInt(currentPosLocation.getLongitude()));
 			Toast.makeText(
 					MapViewActivity.this,
-					"Current location set to: " + currentPos.getLatitude()
-							+ ", " + currentPos.getLongitude(),
+					"Current location set to: "
+							+ currentPosLocation.getLatitude() + ", "
+							+ currentPosLocation.getLongitude(),
 					Toast.LENGTH_SHORT).show();
+			Toast.makeText(
+					MapViewActivity.this,
+					"currentPosLocation: "
+							+ currentPosLocation.getLatitude()
+							+ ", "
+							+ currentPosLocation.getLongitude()
+							+ "\ncurrentPosGeoPoint: "
+							+ convertGeoToDouble(currentPosGeoPoint
+									.getLatitudeE6())
+							+ ", "
+							+ convertGeoToDouble(currentPosGeoPoint
+									.getLongitudeE6()), Toast.LENGTH_LONG)
+					.show();
 			// Log.i(TAG, "Current location set to: " + currentPos.getLatitude()
 			// + ", " + currentPos.getLongitude());
 			// Toast.makeText(MapViewActivity.this,
 			// "GPS signal is good - current position is set",
 			// Toast.LENGTH_SHORT).show();
-			return true;
 		}
 		// Log.i(TAG, "" + myLocation.getCurrentLocation());
 	}
@@ -242,15 +260,15 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 	private void guideToSavedPosition() {
 		// nextPos = GeoToLocation(new GeoPoint(55705248, 13186763));
 
-		if (currentPos != null) {
+		if (currentPosLocation != null) {
 
-			WayPoint goal = new WayPoint("goal", currentPos);
+			WayPoint goal = new WayPoint("goal", currentPosLocation);
 
 			theGuide.setNextDestination(goal);
 
 			theGuide.onStart();
-			Log.i(TAG, "Guiding to " + currentPos.getLatitude() + ", "
-					+ currentPos.getLongitude());
+			Log.i(TAG, "Guiding to " + currentPosLocation.getLatitude() + ", "
+					+ currentPosLocation.getLongitude());
 		} else {
 			// Toast.makeText(GuidingService.this,
 			// "no GPS signal - cannot guide",
@@ -315,9 +333,12 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 			ArrayList<GeoPoint> all_geo_points) {
 		int radius = 200;
 
-		mapView.getOverlays().add(
-				new CurrentPositionOverlay(null, userPoint.getLatitudeE6(),
-						userPoint.getLongitudeE6(), radius - 50));// currentposition
+		mapView.getOverlays()
+				.add(new CurrentPositionOverlay(
+						null,
+						convertGeoToDouble(currentPosGeoPoint.getLatitudeE6()),
+						convertGeoToDouble(currentPosGeoPoint.getLongitudeE6()),
+						radius - 50));// currentposition
 
 		for (GeoPoint point : all_geo_points) {
 			mapView.getOverlays().add(
@@ -329,8 +350,7 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 	}
 
 	private void addGeoPoints(ArrayList<GeoPoint> all_geo_points) {
-		all_geo_points.add(new GeoPoint(userPoint.getLatitudeE6(), userPoint
-				.getLongitudeE6()));
+		all_geo_points.add(new GeoPoint(55714928, 13212816));
 		all_geo_points.add(new GeoPoint(55721056, 1321277));
 		all_geo_points.add(new GeoPoint(55709114, 13167778));
 		all_geo_points.add(new GeoPoint(55724313, 13204009));
@@ -564,8 +584,10 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 		for (int i = 1; i < all_geo_points.size(); i++) {
 			double diff = Math.abs(deg
 					- CalcAngleFromNorth.calculateAngle(
-							convertGeoToDouble(userPoint.getLatitudeE6()),
-							convertGeoToDouble(userPoint.getLongitudeE6()),
+							convertGeoToDouble(currentPosGeoPoint
+									.getLatitudeE6()),
+							convertGeoToDouble(currentPosGeoPoint
+									.getLongitudeE6()),
 							convertGeoToDouble(all_geo_points.get(i)
 									.getLatitudeE6()),
 							convertGeoToDouble(all_geo_points.get(i)
@@ -625,9 +647,10 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 	public void onLocationChanged(Location location) {
 		int lat = (int) (location.getLatitude());
 		int lng = (int) (location.getLongitude());
-		currentPos = location;
-		userPoint = new GeoPoint(convertGeoToInt(currentPos.getLatitude()),
-				convertGeoToInt(currentPos.getLongitude()));
+		currentPosLocation = location;
+		currentPosGeoPoint = new GeoPoint(
+				convertGeoToInt(currentPosLocation.getLatitude()),
+				convertGeoToInt(currentPosLocation.getLongitude()));
 	}
 
 	public void onProviderDisabled(String provider) {
@@ -641,7 +664,8 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 	}
 
 	public void onStatusChanged(String provider, int status, Bundle extras) {
-		// TODO Auto-generated method stub
-
+		Toast.makeText(this,
+				"Status changed of provider " + provider + " to " + status,
+				Toast.LENGTH_SHORT).show();
 	}
 }
