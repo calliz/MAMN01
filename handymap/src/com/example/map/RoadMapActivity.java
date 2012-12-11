@@ -518,9 +518,7 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 			}
 
 			public void onDestinationReached(long[] pattern) { //
-				// Toast.makeText(GuidingService.this, "You have arrived!", //
-				// Toast.LENGTH_SHORT).show());
-				// stefan mod:
+
 				if(pointReached()){
 					Log.d("onDestinationReached", "Final destination reached!!!!!!!!!!!!!!!!");
 					
@@ -529,7 +527,6 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 					
 					RoadMapActivity.this.playNotification();
 				
-					//Toast.makeText(RoadMapActivity.this, "You have arrived!", Toast.LENGTH_SHORT).show);
 				}
 
 			}
