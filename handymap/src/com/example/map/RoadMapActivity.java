@@ -114,9 +114,6 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 
 		all_geo_points.remove(0);// remove the first node
 
-		// kommer att anvÃ¤nda all_geo... fÃ¶r att fÃ¥ ut fÃ¶rsta
-		// guid punkten
-
 		currentTarget = all_geo_points.get(0);
 		if (savedInstanceState != null) {
 			mModeCompass = savedInstanceState.getBoolean(
