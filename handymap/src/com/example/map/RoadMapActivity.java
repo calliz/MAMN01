@@ -628,9 +628,10 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 	private void guideToSavedPosition() {
 		// nextPos = GeoToLocation(new GeoPoint(55705248, 13186763));
 
-		if (goalPosLocation != null) {
+		if (goalPosLocation != null) {//Ändrade till next node
 
-			WayPoint goal = new WayPoint("goal", goalPosLocation);
+			Location currentTargetLocation = geoToLocation(currentTarget);
+			WayPoint goal = new WayPoint("goal", currentTargetLocation);
 
 			theGuide.setNextDestination(goal);
 
