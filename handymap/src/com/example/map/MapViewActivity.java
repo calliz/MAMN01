@@ -192,128 +192,11 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 				SensorManager.SENSOR_DELAY_NORMAL);
 	}
 
-	/* HaptiMap function */
-	private void startHapticGuide() {
-		myLocation = new MyLocationModule(this);
-
-		myLocation.onStart();
-
-		currentPosLocation = null;
-
-		nextPosLocation = null;
-
-		theGuide = new HapticGuide(this);
-
-		fetchAndSetCurrentPosition();
-
-		// guideToSavedPosition();
-
-		// theGuide.registerHapticGuideEventListener(new
-		// HapticGuideEventListener() {
-		//
-		// public void onRateIntervalChanged(int millis) {
-		//
-		// }d
-		//
-		// public void onPrepared(boolean onPrepared) {
-		//
-		// }
-		//
-		// public void onDestinationReached(long[] pattern) { //
-		// // Toast.makeText(GuidingService.this, "You have arrived!", //
-		// // Toast.LENGTH_SHORT).show();
-		// Log.i(TAG, "You have arrived at your final destination!!!");
-		// }
-		// });
-
-	}
-
-	/* HaptiMap function */
-	private void fetchAndSetCurrentPosition() {
-		currentPosLocation = myLocation.getCurrentLocation();
-
-		// IKDC 55.714928,13.212816 JAJJAJA
-		// currentPosLocation = geoToLocation(new GeoPoint(55714928, 13212816));
-
-		if (currentPosLocation == null) {
-			Toast.makeText(MapViewActivity.this, "No GPS signal - waiting",
-					Toast.LENGTH_SHORT).show();
-			Log.e(TAG, "currentPosLocation null");
-			this.finish();
-		} else {
-			currentPosGeoPoint = new GeoPoint(
-					convertGeoToInt(currentPosLocation.getLatitude()),
-					convertGeoToInt(currentPosLocation.getLongitude()));
-			if (currentPosGeoPoint == null) {
-				Log.e(TAG, "currentPosGeoPoint null");
-				this.finish();
-			}
-
-			Toast.makeText(
-					MapViewActivity.this,
-					"Current location set to: "
-							+ currentPosLocation.getLatitude() + ", "
-							+ currentPosLocation.getLongitude(),
-					Toast.LENGTH_SHORT).show();
-			Toast.makeText(
-					MapViewActivity.this,
-					"currentPosLocation: "
-							+ currentPosLocation.getLatitude()
-							+ ", "
-							+ currentPosLocation.getLongitude()
-							+ "\ncurrentPosGeoPoint: "
-							+ convertGeoToDouble(currentPosGeoPoint
-									.getLatitudeE6())
-							+ ", "
-							+ convertGeoToDouble(currentPosGeoPoint
-									.getLongitudeE6()), Toast.LENGTH_LONG)
-					.show();
-			// Log.i(TAG, "Current location set to: " + currentPos.getLatitude()
-			// + ", " + currentPos.getLongitude());
-			// Toast.makeText(MapViewActivity.this,
-			// "GPS signal is good - current position is set",
-			// Toast.LENGTH_SHORT).show();
-		}
-		// Log.i(TAG, "" + myLocation.getCurrentLocation());
-	}
-
-	private int convertGeoToInt(double degrees) {
-		return (int) (degrees * 1e6);
-	}
 
 	private double convertGeoToDouble(int microdegrees) {
 		return (double) microdegrees / 1e6;
 	}
 
-	/* HaptiMap function */
-	private void guideToSavedPosition() {
-		// nextPos = GeoToLocation(new GeoPoint(55705248, 13186763));
-
-		if (currentPosLocation != null) {
-
-			WayPoint goal = new WayPoint("goal", currentPosLocation);
-
-			theGuide.setNextDestination(goal);
-
-			theGuide.onStart();
-			Log.i(TAG, "Guiding to " + currentPosLocation.getLatitude() + ", "
-					+ currentPosLocation.getLongitude());
-		} else {
-			// Toast.makeText(GuidingService.this,
-			// "no GPS signal - cannot guide",
-			// Toast.LENGTH_SHORT).show();
-			Log.i(TAG, "no GPS signal - cannot guide");
-		}
-		// Log.i(TAG, "guide button");
-	}
-
-	/* HaptiMap function */
-	private Location geoToLocation(GeoPoint geoPoint) {
-		Location location = new Location("dummyProvider");
-		location.setLatitude(geoPoint.getLatitudeE6() / 1E6);
-		location.setLongitude(geoPoint.getLongitudeE6() / 1E6);
-		return location;
-	}
 
 	public void blackBackround(MapView mapView, GeoPoint currentLocation) {
 		mapView.getOverlays().add(
@@ -382,12 +265,12 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 
 	private void addGeoPoints(ArrayList<GeoPoint> all_geo_points) {
 		all_geo_points.add(currentPosGeoPoint);
-//		all_geo_points.add(new GeoPoint(55705571, 13186895));
-//		all_geo_points.add(new GeoPoint(55720754, 13221481));
-//		all_geo_points.add(new GeoPoint(55703975, 13203114));
-		//all_geo_points.add(new GeoPoint(55709458, 13214323));//ica
-		//all_geo_points.add(new GeoPoint(55715587,13209781));//kc     
-		all_geo_points.add(new GeoPoint(55711447,13204477)); //observatoriet
+		// all_geo_points.add(new GeoPoint(55705571, 13186895));
+		// all_geo_points.add(new GeoPoint(55720754, 13221481));
+		// all_geo_points.add(new GeoPoint(55703975, 13203114));
+		// all_geo_points.add(new GeoPoint(55709458, 13214323));//ica
+		// all_geo_points.add(new GeoPoint(55715587,13209781));//kc
+		all_geo_points.add(new GeoPoint(55711447, 13204477)); // observatoriet
 		// all_geo_points.add(new GeoPoint(55705644, 13186916));
 	}
 
@@ -580,37 +463,6 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 
 	}
 
-	// private class GP {// possible extends GeoPoint
-	// double lat;
-	// double longi;
-	// CharSequence locationName;
-	//
-	// public GP(double lat, double longi, CharSequence locationName) {
-	// this.lat = lat;
-	// this.longi = longi;
-	// this.locationName = locationName;
-	// }
-	//
-	// public CharSequence getName() {
-	// return locationName;
-	// }
-	//
-	// public int getLongiE6() {
-	// return (int) (longi * 1e6);
-	// }
-	//
-	// public int getLatE6() {
-	// return (int) (lat * 1e6);
-	// }
-	//
-	// public double getLongi() {
-	// return longi;
-	// }
-	//
-	// public double getLat() {
-	// return lat;
-	// }
-	// }
 
 	public void setBearing(double deg) {
 		double min_diff = Double.MAX_VALUE;

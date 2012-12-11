@@ -95,13 +95,6 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 		mc = mapView.getController();
 		mc.setZoom(initZoom);
 
-		// Start and goal GeoPoints here
-		// try {
-		// Thread.sleep(10000);
-		// } catch (InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
 
 		// Get selectedLocation from MapViewActivity
 		handleIntent();
@@ -172,13 +165,13 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 				SensorManager.SENSOR_DELAY_NORMAL);
 	}
 
-	public void setNextNode(GeoPoint newPoint){//Måste implementeras
-		
+	public void setNextNode(GeoPoint newPoint) {// Måste implementeras
+
 		WayPoint nextNode = new WayPoint("nextNode", GeoToLocation(newPoint));
 
 		theGuide.setNextDestination(nextNode);
 	}
-	
+
 	/* HaptiMap function */
 	private Location GeoToLocation(GeoPoint geoPoint) {
 		Location location = new Location("dummyProvider");
@@ -195,29 +188,31 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 		all_geo_points.remove(0);
 		currentTarget = all_geo_points.get(0);
 		setNextNode(currentTarget);
-		
-		all_geo_points.add(0, getCurrentGeoPoint());//lägg till current position för uppritning, tas bort sen.
-		
-		
+
+		all_geo_points.add(0, getCurrentGeoPoint());// lägg till current
+													// position för uppritning,
+													// tas bort sen.
+
 		mapView.getOverlays().remove(roadOverlay);
 		roadOverlay = new RoadOverlay(all_geo_points);
-		all_geo_points.remove(0);//för att hålla listan i ok state
+		all_geo_points.remove(0);// för att hålla listan i ok state
 		mapView.getOverlays().add(roadOverlay);
 
 		return false;
 
 	}
-	
-	public GeoPoint getCurrentGeoPoint(){
+
+	public GeoPoint getCurrentGeoPoint() {
 		Location loc = myLocation.getCurrentLocation();
-		
-		if(loc  == null){
+
+		if (loc == null) {
 			Log.d("getCurrentGeoPoint", "Null i location");
 			System.exit(1);
 		}
-		
-		GeoPoint currPos = new GeoPoint((int) (loc.getLatitude()*1e6), (int)(loc.getLongitude() * 1e6));
-				
+
+		GeoPoint currPos = new GeoPoint((int) (loc.getLatitude() * 1e6),
+				(int) (loc.getLongitude() * 1e6));
+
 		return currPos;
 	}
 
@@ -334,74 +329,38 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 			e.printStackTrace();
 
 		}
-		
-		for(int i = 0; i < list_of_geopoints.size(); i++){
-			if(i == list_of_geopoints.size() -1)
+
+		for (int i = 0; i < list_of_geopoints.size(); i++) {
+			if (i == list_of_geopoints.size() - 1)
 				break;
-			
+
 			GeoPoint gp = list_of_geopoints.get(i);
-			
-			for(int k = i+1; k < list_of_geopoints.size(); k++){
-				if(list_of_geopoints.get(k).equals(gp)){
+
+			for (int k = i + 1; k < list_of_geopoints.size(); k++) {
+				if (list_of_geopoints.get(k).equals(gp)) {
 					list_of_geopoints.remove(k);
 					k--;
 				}
 			}
-			
+
 		}
-		
-		for(int i = 0; i < list_of_geopoints.size(); i++){
+
+		for (int i = 0; i < list_of_geopoints.size(); i++) {
 			GeoPoint gp = list_of_geopoints.get(i);
-			Log.d("points:", " Point "+ i + "lat: " + gp.getLatitudeE6() + " long: " + gp.getLongitudeE6());
+			Log.d("points:", " Point " + i + "lat: " + gp.getLatitudeE6()
+					+ " long: " + gp.getLongitudeE6());
 		}
-		
-		//stefan mod
-		list_of_geopoints.remove(list_of_geopoints.size() -1 );
-		list_of_geopoints.remove(list_of_geopoints.size() -1 );
-		list_of_geopoints.add(new GeoPoint((int) (lat2*1e6), (int)(lon2*1e6)));
-		//end
+
+		// stefan mod
+		list_of_geopoints.remove(list_of_geopoints.size() - 1);
+		list_of_geopoints.remove(list_of_geopoints.size() - 1);
+		list_of_geopoints.add(new GeoPoint((int) (lat2 * 1e6),
+				(int) (lon2 * 1e6)));
+		// end
 
 		return list_of_geopoints;
 
 	}
-	
-	public void reverseList(ArrayList<GeoPoint> list){
-		
-//		for(int i = 0; ){
-//			
-//		}
-		
-	}
-
-	private class GP {// possible extends GeoPoint
-		double lat;
-		double longi;
-		private Overlay overlay;
-
-		public GP(double lat, double longi) {
-			this.lat = lat;
-			this.longi = longi;
-			this.overlay = overlay;
-		}
-
-		public int getLongiE6() {
-			return (int) (longi * 1e6);
-		}
-
-		public int getLatE6() {
-			return (int) (lat * 1e6);
-		}
-
-		public double getLongi() {
-			return longi;
-		}
-
-		public double getLat() {
-			return lat;
-		}
-	}
-
-	// new
 
 	public void onClick(View v) {
 		switch (v.getId()) {
@@ -453,18 +412,18 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 		// toggleCompassButton.setChecked(mModeCompass);
 
 		// shows the my location dot centered on your last known location
-//		mMyLocationOverlay.enableMyLocation();
-//		if (currentPosGeoPoint == null)
-//			mMyLocationOverlay.runOnFirstFix(new Runnable() {
-//				public void run() {
-//					currentPosGeoPoint = mMyLocationOverlay.getMyLocation();
-//					// if(userPoint!=null)
-//					// mc.animateTo(userPoint);
-//
-//				}
-//			});
-//		else
-//			mc.animateTo(currentPosGeoPoint);
+		// mMyLocationOverlay.enableMyLocation();
+		// if (currentPosGeoPoint == null)
+		// mMyLocationOverlay.runOnFirstFix(new Runnable() {
+		// public void run() {
+		// currentPosGeoPoint = mMyLocationOverlay.getMyLocation();
+		// // if(userPoint!=null)
+		// // mc.animateTo(userPoint);
+		//
+		// }
+		// });
+		// else
+		// mc.animateTo(currentPosGeoPoint);
 	}
 
 	@Override
@@ -518,11 +477,11 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 		this.isTilted = b;
 		// Log.e("Tilted","Tilting!");
 	}
-	
-	public void playNotification(){
+
+	public void playNotification() {
 		MediaPlayer player = MediaPlayer.create(this,
-			    Settings.System.DEFAULT_RINGTONE_URI);
-			player.start();
+				Settings.System.DEFAULT_RINGTONE_URI);
+		player.start();
 	}
 
 	/* HaptiMap function */
@@ -552,19 +511,19 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 			}
 
 			public void onDestinationReached(long[] pattern) { //
-				
-				
-				if(pointReached()){
-					Log.d("onDestinationReached", "Final destination reached!!!!!!!!!!!!!!!!");
-					
+
+				if (pointReached()) {
+					Log.d("onDestinationReached",
+							"Final destination reached!!!!!!!!!!!!!!!!");
+
 					Toast.makeText(RoadMapActivity.this, "Du är framme!",
 							Toast.LENGTH_SHORT).show();
-					
+
 					RoadMapActivity.this.playNotification();
-				
-					
-				}else{
-					Toast.makeText(RoadMapActivity.this, "Point reached but not there yet...",
+
+				} else {
+					Toast.makeText(RoadMapActivity.this,
+							"Point reached but not there yet...",
 							Toast.LENGTH_SHORT).show();
 				}
 
@@ -607,13 +566,9 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 							+ convertGeoToDouble(currentPosGeoPoint
 									.getLongitudeE6()), Toast.LENGTH_LONG)
 					.show();
-			// Log.i(TAG, "Current location set to: " + currentPos.getLatitude()
-			// + ", " + currentPos.getLongitude());
-			// Toast.makeText(MapViewActivity.this,
-			// "GPS signal is good - current position is set",
-			// Toast.LENGTH_SHORT).show();
+			
 		}
-		// Log.i(TAG, "" + myLocation.getCurrentLocation());
+		
 	}
 
 	private int convertGeoToInt(double degrees) {
@@ -628,7 +583,7 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 	private void guideToSavedPosition() {
 		// nextPos = GeoToLocation(new GeoPoint(55705248, 13186763));
 
-		if (goalPosLocation != null) {//Ändrade till next node
+		if (goalPosLocation != null) {// Ändrade till next node
 
 			Location currentTargetLocation = geoToLocation(currentTarget);
 			WayPoint goal = new WayPoint("goal", currentTargetLocation);
@@ -639,12 +594,10 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 			Log.i(TAG, "Guiding to " + goalPosLocation.getLatitude() + ", "
 					+ goalPosLocation.getLongitude());
 		} else {
-			// Toast.makeText(GuidingService.this,
-			// "no GPS signal - cannot guide",
-			// Toast.LENGTH_SHORT).show();
+			
 			Log.i(TAG, "no GPS signal - cannot guide");
 		}
-		// Log.i(TAG, "guide button");
+		
 	}
 
 	/* HaptiMap function */
