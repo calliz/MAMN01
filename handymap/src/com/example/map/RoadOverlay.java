@@ -14,14 +14,26 @@ import com.google.android.maps.Overlay;
 
 public class RoadOverlay extends Overlay {
 
-	private ArrayList all_geo_points;
+	private ArrayList<GeoPoint> all_geo_points;
 
-	public RoadOverlay(ArrayList allGeoPoints) {
+	public RoadOverlay(ArrayList<GeoPoint> allGeoPoints) {
 
 		super();
 
-		this.all_geo_points = allGeoPoints;
+		hardCopy(allGeoPoints);
 
+	}
+	
+	public void hardCopy(ArrayList<GeoPoint> allGeoPoints){
+		
+		all_geo_points = new ArrayList<GeoPoint>();
+		
+		for(int i = 0; i < allGeoPoints.size(); i++){
+
+			all_geo_points.add(new GeoPoint(allGeoPoints.get(i).getLatitudeE6(), allGeoPoints.get(i).getLongitudeE6()));
+		}
+		
+		
 	}
 
 	@Override
