@@ -14,7 +14,6 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.haptimap.hcimodules.guiding.HapticGuide;
 import org.haptimap.hcimodules.util.MyLocationModule;
-import org.haptimap.hcimodules.util.WayPoint;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -22,6 +21,7 @@ import org.w3c.dom.NodeList;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
@@ -72,6 +72,7 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 	private String provider;
 
 	private LocationListener myLocationListener;
+	private ResourcesOverlay resourcesOverlay;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -192,11 +193,9 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 				SensorManager.SENSOR_DELAY_NORMAL);
 	}
 
-
 	private double convertGeoToDouble(int microdegrees) {
 		return (double) microdegrees / 1e6;
 	}
-
 
 	public void blackBackround(MapView mapView, GeoPoint currentLocation) {
 		mapView.getOverlays().add(
@@ -269,9 +268,23 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 		// all_geo_points.add(new GeoPoint(55720754, 13221481));
 		// all_geo_points.add(new GeoPoint(55703975, 13203114));
 		// all_geo_points.add(new GeoPoint(55709458, 13214323));//ica
-		// all_geo_points.add(new GeoPoint(55715587,13209781));//kc
+		all_geo_points.add(new GeoPoint(55715587, 13209781));// kc
 		all_geo_points.add(new GeoPoint(55711447, 13204477)); // observatoriet
 		// all_geo_points.add(new GeoPoint(55705644, 13186916));
+
+		Drawable pigeonTitle = this.getResources().getDrawable(
+				R.drawable.blackdot);
+
+		resourcesOverlay = new ResourcesOverlay(pigeonTitle);
+		resourcesOverlay.addOverlay(all_geo_points.get(1).getLatitudeE6(),
+				all_geo_points.get(1).getLongitudeE6(), "Kemicentrum", "");
+		resourcesOverlay.addOverlay(all_geo_points.get(2).getLatitudeE6(),
+				all_geo_points.get(2).getLongitudeE6(), "Observatoriet", "");
+
+		if (resourcesOverlay.size() > 0) {
+			nonPannableMapView.getOverlays().add(resourcesOverlay);
+		}
+
 	}
 
 	public void createRightZoomLevel(MapController mc,
@@ -463,7 +476,6 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 
 	}
 
-
 	public void setBearing(double deg) {
 		double min_diff = Double.MAX_VALUE;
 		Toast toast = null;
@@ -484,7 +496,7 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 				min_index = i;
 			}
 		}
-		if (min_diff < 360 && min_index != -1) {
+		if (min_diff < 10 && min_index != -1) {
 
 			// Log.e("Found", "Pointing at lat:"
 			// + all_geo_points.get(min_index).lat + " longi:"
