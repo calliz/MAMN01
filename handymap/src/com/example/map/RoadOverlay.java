@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.util.Log;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapView;
@@ -28,12 +29,15 @@ public class RoadOverlay extends Overlay {
 
 		super.draw(canvas, mv, shadow);
 
-		drawPath(mv, canvas);
+		drawPath(mv, canvas);//mv
+
+		
+		
 		return true;
 
 	}
 
-	public void drawPath(MapView mv, Canvas canvas) {
+	public void drawPath(MapView mv, Canvas canvas){
 
 		int xPrev = -1, yPrev = -1, xNow = -1, yNow = -1;
 
@@ -46,9 +50,12 @@ public class RoadOverlay extends Overlay {
 		paint.setStrokeWidth(4);
 
 		paint.setAlpha(100);
+		
+
+		
 		if (all_geo_points != null)
 
-			for (int i = 0; i < all_geo_points.size() - 4; i++) {
+			for (int i = 0; i < all_geo_points.size(); i++) {//prev for (int i = 0; i < all_geo_points.size() - 4; i++) {
 
 				GeoPoint gp = (GeoPoint) all_geo_points.get(i);
 

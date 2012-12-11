@@ -385,7 +385,9 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 //		all_geo_points.add(new GeoPoint(55705571, 13186895));
 //		all_geo_points.add(new GeoPoint(55720754, 13221481));
 //		all_geo_points.add(new GeoPoint(55703975, 13203114));
-		all_geo_points.add(new GeoPoint(55709458, 13214323));
+		//all_geo_points.add(new GeoPoint(55709458, 13214323));//ica
+		//all_geo_points.add(new GeoPoint(55715587,13209781));//kc     
+		all_geo_points.add(new GeoPoint(55711447,13204477)); //observatoriet
 		// all_geo_points.add(new GeoPoint(55705644, 13186916));
 	}
 
@@ -630,7 +632,7 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 				min_index = i;
 			}
 		}
-		if (min_diff < 10 && min_index != -1) {
+		if (min_diff < 360 && min_index != -1) {
 
 			// Log.e("Found", "Pointing at lat:"
 			// + all_geo_points.get(min_index).lat + " longi:"

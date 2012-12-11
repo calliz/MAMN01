@@ -334,9 +334,43 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 			e.printStackTrace();
 
 		}
+		
+		for(int i = 0; i < list_of_geopoints.size(); i++){
+			if(i == list_of_geopoints.size() -1)
+				break;
+			
+			GeoPoint gp = list_of_geopoints.get(i);
+			
+			for(int k = i+1; k < list_of_geopoints.size(); k++){
+				if(list_of_geopoints.get(k).equals(gp)){
+					list_of_geopoints.remove(k);
+					k--;
+				}
+			}
+			
+		}
+		
+		for(int i = 0; i < list_of_geopoints.size(); i++){
+			GeoPoint gp = list_of_geopoints.get(i);
+			Log.d("points:", " Point "+ i + "lat: " + gp.getLatitudeE6() + " long: " + gp.getLongitudeE6());
+		}
+		
+		//stefan mod
+		list_of_geopoints.remove(list_of_geopoints.size() -1 );
+		list_of_geopoints.remove(list_of_geopoints.size() -1 );
+		list_of_geopoints.add(new GeoPoint((int) (lat2*1e6), (int)(lon2*1e6)));
+		//end
 
 		return list_of_geopoints;
 
+	}
+	
+	public void reverseList(ArrayList<GeoPoint> list){
+		
+//		for(int i = 0; ){
+//			
+//		}
+		
 	}
 
 	private class GP {// possible extends GeoPoint
@@ -518,9 +552,8 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 			}
 
 			public void onDestinationReached(long[] pattern) { //
-				// Toast.makeText(GuidingService.this, "You have arrived!", //
-				// Toast.LENGTH_SHORT).show());
-				// stefan mod:
+				
+				
 				if(pointReached()){
 					Log.d("onDestinationReached", "Final destination reached!!!!!!!!!!!!!!!!");
 					
@@ -530,6 +563,9 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass {
 					RoadMapActivity.this.playNotification();
 				
 					
+				}else{
+					Toast.makeText(RoadMapActivity.this, "Point reached but not there yet...",
+							Toast.LENGTH_SHORT).show();
 				}
 
 			}
