@@ -548,7 +548,7 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass,
 
 				} else {
 					Toast.makeText(RoadMapActivity.this,
-							"Point reached but not there yet...",
+							"You are getting closer to the destination!",
 							Toast.LENGTH_SHORT).show();
 				}
 
@@ -631,6 +631,7 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass,
 			Toast.makeText(RoadMapActivity.this,
 					"no GPS signal - cannot guide", Toast.LENGTH_SHORT).show();
 			Log.e(TAG, "no GPS signal - cannot guide");
+			this.finish();
 		}
 		// Log.i(TAG, "guide button");
 	}
