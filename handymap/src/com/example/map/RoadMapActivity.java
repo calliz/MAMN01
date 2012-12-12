@@ -85,9 +85,12 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass,
 		mRotateView = new RotateView(this);
 
 		mapView = (MapView) findViewById(R.id.mapview);
+		
 
 		mMyLocationOverlay = new MyLocationOverlay(this, mapView);
 
+		
+		
 		// Optional MapView settings
 		mapView.getOverlays().add(mMyLocationOverlay);
 		mapView.setBuiltInZoomControls(false);
@@ -131,6 +134,7 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass,
 		all_geo_points.remove(0);// remove the first node
 
 		currentTarget = all_geo_points.get(0);
+		
 		if (savedInstanceState != null) {
 			mModeCompass = savedInstanceState.getBoolean(
 					SAVED_STATE_COMPASS_MODE, false);
@@ -145,6 +149,8 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass,
 		setListners(sensorManager, mEventListener2);
 
 		startHapticGuide();
+		
+		toogleRotateView(mModeCompass);
 	}
 
 	private void setLocationManager() {
@@ -384,15 +390,6 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass,
 
 		return list_of_geopoints;
 
-	}
-
-	public void onClick(View v) {
-		switch (v.getId()) {
-		case R.id.button_compass:
-			// mMyLocationOverlay.isCompassEnabled();
-			toogleRotateView(mModeCompass);
-			break;
-		}
 	}
 
 	/**

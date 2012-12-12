@@ -137,6 +137,8 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 		addLocationMarkers(nonPannableMapView, all_geo_points);
 		// mc.animateTo(new GeoPoint(latitudeE6, longitudeE6));
 
+		addTitles();
+		
 		if (savedInstanceState != null) {
 			mModeCompass = savedInstanceState.getBoolean(
 					SAVED_STATE_COMPASS_MODE, false);
@@ -158,9 +160,23 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 			}
 		});
 
-		mMyLocationOverlay.isCompassEnabled();
 		toogleRotateView(mModeCompass);
 		nonPannableMapView.setBuiltInZoomControls(false);
+	}
+
+	private void addTitles() {
+		Drawable pigeonTitle = this.getResources().getDrawable(
+				R.drawable.blackdot);
+
+		resourcesOverlay = new ResourcesOverlay(pigeonTitle);
+		resourcesOverlay.addOverlay(all_geo_points.get(1).getLatitudeE6(),
+				all_geo_points.get(1).getLongitudeE6(), "Kemicentrum", "");
+		resourcesOverlay.addOverlay(all_geo_points.get(2).getLatitudeE6(),
+				all_geo_points.get(2).getLongitudeE6(), "Observatoriet", "");
+
+		if (resourcesOverlay.size() > 0) {
+			nonPannableMapView.getOverlays().add(resourcesOverlay);
+		}
 	}
 
 	private void setLocationManager() {
@@ -271,19 +287,6 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 		all_geo_points.add(new GeoPoint(55715587, 13209781));// kc
 		all_geo_points.add(new GeoPoint(55711447, 13204477)); // observatoriet
 		// all_geo_points.add(new GeoPoint(55705644, 13186916));
-
-		Drawable pigeonTitle = this.getResources().getDrawable(
-				R.drawable.blackdot);
-
-		resourcesOverlay = new ResourcesOverlay(pigeonTitle);
-		resourcesOverlay.addOverlay(all_geo_points.get(1).getLatitudeE6(),
-				all_geo_points.get(1).getLongitudeE6(), "Kemicentrum", "");
-		resourcesOverlay.addOverlay(all_geo_points.get(2).getLatitudeE6(),
-				all_geo_points.get(2).getLongitudeE6(), "Observatoriet", "");
-
-		if (resourcesOverlay.size() > 0) {
-			nonPannableMapView.getOverlays().add(resourcesOverlay);
-		}
 
 	}
 
