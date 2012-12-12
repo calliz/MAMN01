@@ -78,17 +78,19 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass,
 		super.onCreate(savedInstanceState);
 		// startHapticGuide();
 
-		setContentView(R.layout.road_map_activity);
+		setContentView(R.layout.map_view_activity);
 
 		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		mRotateViewContainer = (LinearLayout) findViewById(R.id.rotating_view);
 		mRotateView = new RotateView(this);
 
 		mapView = (MapView) findViewById(R.id.mapview);
-		
-
+//		
+//		mc = mapView.getController();
+//		mc.setZoom(14);
 		mMyLocationOverlay = new MyLocationOverlay(this, mapView);
 
+		
 		
 		
 		// Optional MapView settings
@@ -186,11 +188,11 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass,
 					convertGeoToInt(goalPosLocation.getLatitude()),
 					convertGeoToInt(goalPosLocation.getLongitude()));
 
-			Toast.makeText(
-					RoadMapActivity.this,
-					"Goal location is: " + goalPosLocation.getLatitude() + ", "
-							+ goalPosLocation.getLongitude(),
-					Toast.LENGTH_SHORT).show();
+//			Toast.makeText(
+//					RoadMapActivity.this,
+//					"Goal location is: " + goalPosLocation.getLatitude() + ", "
+//							+ goalPosLocation.getLongitude(),
+//					Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -470,6 +472,8 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass,
 	protected void onStop() {
 		mSensorManager.unregisterListener(mRotateView);
 		mMyLocationOverlay.disableMyLocation();
+		theGuide.onDestroy();
+		myLocation.onDestroy();
 		super.onStop();
 	}
 
@@ -537,7 +541,7 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass,
 					Log.d("onDestinationReached",
 							"Final destination reached!!!!!!!!!!!!!!!!");
 
-					Toast.makeText(RoadMapActivity.this, "Du är framme!",
+					Toast.makeText(RoadMapActivity.this, "You have reached your destination!",
 							Toast.LENGTH_SHORT).show();
 
 					RoadMapActivity.this.playNotification();
@@ -569,25 +573,25 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass,
 			currentPosGeoPoint = new GeoPoint(
 					convertGeoToInt(currentPosLocation.getLatitude()),
 					convertGeoToInt(currentPosLocation.getLongitude()));
-			Toast.makeText(
-					RoadMapActivity.this,
-					"Current location set to: "
-							+ currentPosLocation.getLatitude() + ", "
-							+ currentPosLocation.getLongitude(),
-					Toast.LENGTH_SHORT).show();
-			Toast.makeText(
-					RoadMapActivity.this,
-					"currentPosLocation: "
-							+ currentPosLocation.getLatitude()
-							+ ", "
-							+ currentPosLocation.getLongitude()
-							+ "\ncurrentPosGeoPoint: "
-							+ convertGeoToDouble(currentPosGeoPoint
-									.getLatitudeE6())
-							+ ", "
-							+ convertGeoToDouble(currentPosGeoPoint
-									.getLongitudeE6()), Toast.LENGTH_LONG)
-					.show();
+//			Toast.makeText(
+//					RoadMapActivity.this,
+//					"Current location set to: "
+//							+ currentPosLocation.getLatitude() + ", "
+//							+ currentPosLocation.getLongitude(),
+//					Toast.LENGTH_SHORT).show();
+//			Toast.makeText(
+//					RoadMapActivity.this,
+//					"currentPosLocation: "
+//							+ currentPosLocation.getLatitude()
+//							+ ", "
+//							+ currentPosLocation.getLongitude()
+//							+ "\ncurrentPosGeoPoint: "
+//							+ convertGeoToDouble(currentPosGeoPoint
+//									.getLatitudeE6())
+//							+ ", "
+//							+ convertGeoToDouble(currentPosGeoPoint
+//									.getLongitudeE6()), Toast.LENGTH_LONG)
+//					.show();
 			// Log.i(TAG, "Current location set to: " + currentPos.getLatitude()
 			// + ", " + currentPos.getLongitude());
 			// Toast.makeText(MapViewActivity.this,
@@ -618,11 +622,11 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass,
 			theGuide.onStart();
 			Log.i(TAG, "Guiding to " + currentTarget.getLatitudeE6() + ", "
 					+ currentTarget.getLongitudeE6());
-			Toast.makeText(
-					RoadMapActivity.this,
-					"Guiding to : " + currentTarget.getLatitudeE6() + ", "
-							+ currentTarget.getLongitudeE6(),
-					Toast.LENGTH_SHORT).show();
+//			Toast.makeText(
+//					RoadMapActivity.this,
+//					"Guiding to : " + currentTarget.getLatitudeE6() + ", "
+//							+ currentTarget.getLongitudeE6(),
+//					Toast.LENGTH_SHORT).show();
 		} else {
 			Toast.makeText(RoadMapActivity.this,
 					"no GPS signal - cannot guide", Toast.LENGTH_SHORT).show();
@@ -642,11 +646,11 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass,
 	public void setCurrentLocation(GeoPoint geoPoint) {
 		currentPosGeoPoint = geoPoint;
 
-		Toast.makeText(
-				RoadMapActivity.this,
-				"location set to : " + currentPosGeoPoint.getLatitudeE6() + ","
-						+ currentPosGeoPoint.getLongitudeE6(),
-				Toast.LENGTH_SHORT).show();
+//		Toast.makeText(
+//				RoadMapActivity.this,
+//				"location set to : " + currentPosGeoPoint.getLatitudeE6() + ","
+//						+ currentPosGeoPoint.getLongitudeE6(),
+//				Toast.LENGTH_SHORT).show();
 
 		mc.animateTo(currentPosGeoPoint);// ska ha current location
 		// mc.setZoom(14);
@@ -657,6 +661,7 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass,
 			// position för uppritning,
 			// tas bort sen.
 			mapView.getOverlays().remove(roadOverlay);
+			roadOverlay = null;
 			roadOverlay = new RoadOverlay(all_geo_points);
 			all_geo_points.remove(0);// för att hålla listan i ok state
 			mapView.getOverlays().add(roadOverlay);
@@ -664,9 +669,9 @@ public class RoadMapActivity extends MapActivity implements Tiltable, Compass,
 			// Rita om plutt!!!!!!!!!!
 			
 			
-			roadOverlay = new RoadOverlay(all_geo_points);
-			mapView.getOverlays().add(roadOverlay);// For the next view //
-			createRightZoomLevel(mc, all_geo_points);
+//			roadOverlay = new RoadOverlay(all_geo_points);
+//			mapView.getOverlays().add(roadOverlay);// For the next view //
+//			createRightZoomLevel(mc, all_geo_points);
 
 		}
 

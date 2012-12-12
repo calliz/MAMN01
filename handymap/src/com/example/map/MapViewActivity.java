@@ -138,7 +138,7 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 		// mc.animateTo(new GeoPoint(latitudeE6, longitudeE6));
 
 		addTitles();
-		
+
 		if (savedInstanceState != null) {
 			mModeCompass = savedInstanceState.getBoolean(
 					SAVED_STATE_COMPASS_MODE, false);
@@ -161,7 +161,6 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 		});
 
 		toogleRotateView(mModeCompass);
-		nonPannableMapView.setBuiltInZoomControls(false);
 	}
 
 	private void addTitles() {
@@ -170,9 +169,13 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 
 		resourcesOverlay = new ResourcesOverlay(pigeonTitle);
 		resourcesOverlay.addOverlay(all_geo_points.get(1).getLatitudeE6(),
-				all_geo_points.get(1).getLongitudeE6(), "Kemicentrum", "");
+				all_geo_points.get(1).getLongitudeE6(), "Gunnesbo", "");
 		resourcesOverlay.addOverlay(all_geo_points.get(2).getLatitudeE6(),
-				all_geo_points.get(2).getLongitudeE6(), "Observatoriet", "");
+				all_geo_points.get(2).getLongitudeE6(), "Vildanden", "");
+		resourcesOverlay.addOverlay(all_geo_points.get(3).getLatitudeE6(),
+				all_geo_points.get(3).getLongitudeE6(), "Observatoriet", "");
+		resourcesOverlay.addOverlay(all_geo_points.get(4).getLatitudeE6(),
+				all_geo_points.get(4).getLongitudeE6(), "Willy's", "");
 
 		if (resourcesOverlay.size() > 0) {
 			nonPannableMapView.getOverlays().add(resourcesOverlay);
@@ -280,14 +283,11 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 
 	private void addGeoPoints(ArrayList<GeoPoint> all_geo_points) {
 		all_geo_points.add(currentPosGeoPoint);
-		// all_geo_points.add(new GeoPoint(55705571, 13186895));
-		// all_geo_points.add(new GeoPoint(55720754, 13221481));
-		// all_geo_points.add(new GeoPoint(55703975, 13203114));
-		// all_geo_points.add(new GeoPoint(55709458, 13214323));//ica
-		all_geo_points.add(new GeoPoint(55715587, 13209781));// kc
+		all_geo_points.add(new GeoPoint(55726723,13159548)); // Gunnesbo
+		all_geo_points.add(new GeoPoint(55711615, 13169382));// vildanden
+		// all_geo_points.add(new GeoPoint(55715587, 13209781));// kc
 		all_geo_points.add(new GeoPoint(55711447, 13204477)); // observatoriet
-		// all_geo_points.add(new GeoPoint(55705644, 13186916));
-
+		all_geo_points.add(new GeoPoint(55720319, 13221442)); // Willys's
 	}
 
 	public void createRightZoomLevel(MapController mc,
@@ -527,14 +527,16 @@ public class MapViewActivity extends MapActivity implements Compass, Touch,
 	}
 
 	public void touched() {
-		Toast.makeText(MapViewActivity.this, "touched screen", //
-				Toast.LENGTH_SHORT).show();
+		// Toast.makeText(MapViewActivity.this, "touched screen", //
+		// Toast.LENGTH_SHORT).show();
 		if (selectedLocation != null) {
 			Log.i("MapViewActivity", "selectedLocation lat: "
 					+ selectedLocation.getLatitudeE6() + " longi: "
 					+ selectedLocation.getLongitudeE6());
 			int lat = selectedLocation.getLatitudeE6();
 			int longi = selectedLocation.getLongitudeE6();
+
+			nonPannableMapView.getOverlays().clear();
 
 			Intent roadMapIntent = new Intent(MapViewActivity.this,
 					RoadMapActivity.class);
